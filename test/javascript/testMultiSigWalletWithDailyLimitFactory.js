@@ -1,6 +1,7 @@
 const MultiSigWalletWithDailyLimit = artifacts.require('MultiSigWalletWithDailyLimit')
 const MultiSigWalletWithDailyLimitFactory = artifacts.require('MultiSigWalletWithDailyLimitFactory')
 const web3 = MultiSigWalletWithDailyLimitFactory.web3
+const toBN = web3.utils.toBN;
 
 const utils = require('./utils')
 
@@ -21,12 +22,12 @@ contract('MultiSigWalletWithDailyLimitFactory', (accounts) => {
         const walletAddress = utils.getParamFromTxEvent(tx, 'instantiation', null, 'ContractInstantiation')
 
         const walletCount = await factoryInstance.getInstantiationCount(accounts[0])
-        const multisigWalletAddressConfirmation = await factoryInstance.instantiations(accounts[0], walletCount.sub(1).toNumber())
+        const multisigWalletAddressConfirmation = await factoryInstance.instantiations(accounts[0], walletCount.sub(toBN(1)).toNumber())
         assert.equal(walletAddress, multisigWalletAddressConfirmation)
         assert.ok(factoryInstance.isInstantiation(walletAddress))
 
         // Send money to wallet contract
-        const multisigInstance = MultiSigWalletWithDailyLimit.at(walletAddress)
+        const multisigInstance = await MultiSigWalletWithDailyLimit.at(walletAddress)
         const deposit = 10000
         await new Promise((resolve, reject) => web3.eth.sendTransaction({to: walletAddress, value: deposit, from: accounts[0]}, e => (e ? reject(e) : resolve())))
         const balance = await utils.balanceOf(web3, walletAddress)        
@@ -36,7 +37,7 @@ contract('MultiSigWalletWithDailyLimitFactory', (accounts) => {
         
         // Update daily limit
         const dailyLimitUpdated = 2000
-        const dailyLimitEncoded = multisigInstance.contract.changeDailyLimit.getData(dailyLimitUpdated)
+        const dailyLimitEncoded = multisigInstance.contract.methods.changeDailyLimit(dailyLimitUpdated).encodeABI();
         const transactionId = utils.getParamFromTxEvent(
             await multisigInstance.submitTransaction(multisigInstance.address, 0, dailyLimitEncoded, {from: accounts[0]}),
             'transactionId', null, 'Submission'

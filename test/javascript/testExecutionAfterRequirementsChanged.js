@@ -25,7 +25,7 @@ contract('MultiSigWallet', (accounts) => {
         assert.equal(balance.valueOf(), deposit)
         
         // Add owner wa_4
-        const addOwnerData = multisigInstance.contract.addOwner.getData(accounts[3])
+        const addOwnerData = multisigInstance.contract.methods.addOwner(accounts[3]).encodeABI();
         const transactionId = utils.getParamFromTxEvent(
             await multisigInstance.submitTransaction(multisigInstance.address, 0, addOwnerData, {from: accounts[0]}),
             'transactionId',
@@ -45,7 +45,7 @@ contract('MultiSigWallet', (accounts) => {
 
         // Update required to 1
         const newRequired = 1
-        const updateRequirementData = multisigInstance.contract.changeRequirement.getData(newRequired)
+        const updateRequirementData = multisigInstance.contract.methods.changeRequirement(newRequired).encodeABI();
 
         // Submit successfully
         const transactionId2 = utils.getParamFromTxEvent(

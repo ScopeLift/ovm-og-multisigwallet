@@ -43,7 +43,7 @@ contract('MultiSigWalletWithDailyLimit', (accounts) => {
         const issueResult = await tokenInstance.issueTokens(multisigInstance.address, 1000000, {from: accounts[0]})
         assert.ok(issueResult)
         // Encode transfer call for the multisig
-        const transferEncoded = tokenInstance.contract.transfer.getData(accounts[1], 1000000)
+        const transferEncoded = tokenInstance.contract.methods.transfer(accounts[1], 1000000).encodeABI();
         const transactionId = utils.getParamFromTxEvent(
             await multisigInstance.submitTransaction(tokenInstance.address, 0, transferEncoded, {from: accounts[0]}),
             'transactionId', null, 'Submission')
@@ -52,7 +52,7 @@ contract('MultiSigWalletWithDailyLimit', (accounts) => {
             await multisigInstance.confirmTransaction(transactionId, {from: accounts[1]}),
             'transactionId', null, 'Execution')
         // Check that transaction has been executed
-        assert.ok(transactionId.equals(executedTransactionId))
+        assert.ok(transactionId.eq(executedTransactionId))
         // Check that the transfer has actually occured
         assert.equal(
             1000000,

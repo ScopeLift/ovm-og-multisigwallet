@@ -42,7 +42,7 @@ contract('MultiSigWallet', (accounts) => {
         const issueResult = await tokenInstance.issueTokens(multisigInstance.address, 1000000, {from: accounts[0]})
         assert.ok(issueResult)
         // Encode transfer call for the multisig
-        const transferEncoded = tokenInstance.contract.transfer.getData(accounts[1], 1000000)
+        const transferEncoded = tokenInstance.contract.methods.transfer(accounts[1], 1000000).encodeABI();
         const transactionId = utils.getParamFromTxEvent(
             await multisigInstance.submitTransaction(tokenInstance.address, 0, transferEncoded, {from: accounts[0]}),
             'transactionId', null, 'Submission')
@@ -51,7 +51,7 @@ contract('MultiSigWallet', (accounts) => {
             await multisigInstance.confirmTransaction(transactionId, {from: accounts[1]}),
             'transactionId', null, 'Execution')
         // Check that transaction has been executed
-        assert.ok(transactionId.equals(executedTransactionId))
+        assert.ok(transactionId.eq(executedTransactionId))
         // Check that the transfer has actually occured
         assert.equal(
             1000000,
@@ -61,7 +61,7 @@ contract('MultiSigWallet', (accounts) => {
 
     it('transferFailure', async () => {
         // Encode transfer call for the multisig
-        const transferEncoded = tokenInstance.contract.transfer.getData(accounts[1], 1000000)
+        const transferEncoded = tokenInstance.contract.methods.transfer(accounts[1], 1000000).encodeABI();
         const transactionId = utils.getParamFromTxEvent(
             await multisigInstance.submitTransaction(tokenInstance.address, 0, transferEncoded, {from: accounts[0]}),
             'transactionId', null, 'Submission')
@@ -70,7 +70,7 @@ contract('MultiSigWallet', (accounts) => {
             await multisigInstance.confirmTransaction(transactionId, {from: accounts[1]}),
             'transactionId', null, 'ExecutionFailure')
         // Check that transaction has been executed
-        assert.ok(transactionId.equals(failedTransactionId))
+        assert.ok(transactionId.eq(failedTransactionId))
     })
 
     // The test below can only work if the Multisig wallet allows non-zero destinations (that enables creation of contracts)
@@ -90,7 +90,7 @@ contract('MultiSigWallet', (accounts) => {
 
     it('callReceive1uint', async() => {
          // Encode call for the multisig
-        const receive1uintEncoded = callsInstance.contract.receive1uint.getData(12345)
+        const receive1uintEncoded = callsInstance.contract.methods.receive1uint(12345).encodeABI();
         const transactionId = utils.getParamFromTxEvent(
             await multisigInstance.submitTransaction(callsInstance.address, 67890, receive1uintEncoded, {from: accounts[0]}),
             'transactionId', null, 'Submission')
@@ -99,7 +99,7 @@ contract('MultiSigWallet', (accounts) => {
             await multisigInstance.confirmTransaction(transactionId, {from: accounts[1]}),
             'transactionId', null, 'Execution')
         // Check that transaction has been executed
-        assert.ok(transactionId.equals(executedTransactionId))
+        assert.ok(transactionId.eq(executedTransactionId))
         // Check that the expected parameters and values were passed
         assert.equal(
             12345,
@@ -117,7 +117,7 @@ contract('MultiSigWallet', (accounts) => {
 
     it('callReceive2uint', async() => {
          // Encode call for the multisig
-        const receive2uintsEncoded = callsInstance.contract.receive2uints.getData(12345, 67890)
+        const receive2uintsEncoded = callsInstance.contract.methods.receive2uints(12345, 67890).encodeABI();
         const transactionId = utils.getParamFromTxEvent(
             await multisigInstance.submitTransaction(callsInstance.address, 4040404, receive2uintsEncoded, {from: accounts[0]}),
             'transactionId', null, 'Submission')
@@ -126,7 +126,7 @@ contract('MultiSigWallet', (accounts) => {
             await multisigInstance.confirmTransaction(transactionId, {from: accounts[1]}),
             'transactionId', null, 'Execution')
         // Check that transaction has been executed
-        assert.ok(transactionId.equals(executedTransactionId))
+        assert.ok(transactionId.eq(executedTransactionId))
         // Check that the expected parameters and values were passed
         assert.equal(
             12345,
@@ -150,7 +150,7 @@ contract('MultiSigWallet', (accounts) => {
          // Encode call for the multisig
         const dataHex = '0x' + '0123456789abcdef'.repeat(100) // 800 bytes long
 
-        const receive1bytesEncoded = callsInstance.contract.receive1bytes.getData(dataHex)
+        const receive1bytesEncoded = callsInstance.contract.methods.receive1bytes(dataHex).encodeABI();
         const transactionId = utils.getParamFromTxEvent(
             await multisigInstance.submitTransaction(callsInstance.address, 10, receive1bytesEncoded, {from: accounts[0]}),
             'transactionId', null, 'Submission')
@@ -159,7 +159,7 @@ contract('MultiSigWallet', (accounts) => {
             await multisigInstance.confirmTransaction(transactionId, {from: accounts[1]}),
             'transactionId', null, 'Execution')
         // Check that transaction has been executed
-        assert.ok(transactionId.equals(executedTransactionId))
+        assert.ok(transactionId.eq(executedTransactionId))
         // Check that the expected parameters and values were passed
         assert.equal(
             868, // 800 bytes data + 32 bytes offset + 32 bytes data length + 4 bytes method signature

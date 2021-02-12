@@ -1,5 +1,6 @@
 const MultiSigWalletWithDailyLimit = artifacts.require('MultiSigWalletWithDailyLimit')
 const web3 = MultiSigWalletWithDailyLimit.web3
+const toBN = web3.utils.toBN;
 const deployMultisig = (owners, confirmations, limit) => {
     return MultiSigWalletWithDailyLimit.new(owners, confirmations, limit)
 }
@@ -28,21 +29,22 @@ contract('MultiSigWalletWithDailyLimit', (accounts) => {
         assert.equal(dailyLimit, await multisigInstance.calcMaxWithdraw())
 
         // Withdraw daily limit
-        const value1 = 2000
-        let owner1Balance = await utils.balanceOf(web3, accounts[0])
-        await multisigInstance.submitTransaction(accounts[0], value1, "", {from: accounts[1]})
+        const value1 = 2000;
+        let owner1Balance = toBN(await utils.balanceOf(web3, accounts[0]));
+        await multisigInstance.submitTransaction(accounts[0], toBN(value1), [], {from: accounts[1]})
+
         assert.equal(
-            owner1Balance.add(value1).toString(),
+            owner1Balance.add(toBN(value1)).toString(),
             (await utils.balanceOf(web3, accounts[0])).toString()
         )
         assert.equal(
-            balance.sub(value1).toString(),
+            toBN(balance).sub(toBN(value1)).toString(),
             (await utils.balanceOf(web3, multisigInstance.address)).toString()
         )
 
         // Update daily limit
         const dailyLimitUpdated = 2000
-        const dailyLimitEncoded = multisigInstance.contract.changeDailyLimit.getData(dailyLimitUpdated)
+        const dailyLimitEncoded = multisigInstance.contract.methods.changeDailyLimit(dailyLimitUpdated).encodeABI();
         const transactionId = utils.getParamFromTxEvent(
             await multisigInstance.submitTransaction(multisigInstance.address, 0, dailyLimitEncoded, {from: accounts[0]}),
             'transactionId', null, 'Submission')
@@ -56,10 +58,10 @@ contract('MultiSigWalletWithDailyLimit', (accounts) => {
 
         // Withdraw daily limit
         const value2 = 1000
-        owner1Balance = await utils.balanceOf(web3, accounts[0])
-        await multisigInstance.submitTransaction(accounts[0], value2, "", {from: accounts[1]})
+        owner1Balance = toBN(await utils.balanceOf(web3, accounts[0]));
+        await multisigInstance.submitTransaction(accounts[0], value2, [], {from: accounts[1]})
         assert.equal(
-            owner1Balance.add(value2).toString(),
+            owner1Balance.add(toBN(value2)).toString(),
             (await utils.balanceOf(web3, accounts[0])).toString()
         )
         assert.equal(
@@ -70,9 +72,9 @@ contract('MultiSigWalletWithDailyLimit', (accounts) => {
             dailyLimitUpdated - value2,
             await multisigInstance.calcMaxWithdraw()
         )
-        await multisigInstance.submitTransaction(accounts[0], value2, "", {from: accounts[1]})
+        await multisigInstance.submitTransaction(accounts[0], value2, [], {from: accounts[1]})
         assert.equal(
-            owner1Balance.add(value2*2).toString(),
+            owner1Balance.add(toBN(value2*2)).toString(),
             (await utils.balanceOf(web3, accounts[0])).toString()
         )
         assert.equal(
@@ -86,11 +88,11 @@ contract('MultiSigWalletWithDailyLimit', (accounts) => {
 
         // Third time fails, because daily limit was reached
         const transactionIdFailed = utils.getParamFromTxEvent(
-            await multisigInstance.submitTransaction(accounts[0], value2, "", {from: accounts[1]}),
+            await multisigInstance.submitTransaction(accounts[0], value2, [], {from: accounts[1]}),
             'transactionId', null, 'Submission')
         assert.equal(false, (await multisigInstance.transactions(transactionIdFailed))[3])
         assert.equal(
-            owner1Balance.add(value2*2).toString(),
+            owner1Balance.add(toBN(value2*2)).toString(),
             (await utils.balanceOf(web3, accounts[0])).toString()
         )
         assert.equal(
@@ -107,11 +109,11 @@ contract('MultiSigWalletWithDailyLimit', (accounts) => {
         assert.equal(dailyLimitUpdated, (await multisigInstance.calcMaxWithdraw()).toNumber())
 
         // Execute transaction should work now but fails, because it is triggered from a non owner address
-        utils.assertThrowsAsynchronously(
+        await utils.assertThrowsAsynchronously(
             () => multisigInstance.executeTransaction(transactionIdFailed, {from: accounts[9]})
         )
         // Execute transaction also fails if the sender is a wallet owner but didn't confirm the transaction first
-        utils.assertThrowsAsynchronously(
+        await utils.assertThrowsAsynchronously(
             () => multisigInstance.executeTransaction(transactionIdFailed, {from: accounts[0]})
         )
         // But it works with the right sender
@@ -127,8 +129,8 @@ contract('MultiSigWalletWithDailyLimit', (accounts) => {
 
         // User wants to withdraw more than the daily limit. Withdraw is unsuccessful.
         const value3 = 3000
-        owner1Balance = await utils.balanceOf(web3, accounts[0])
-        await multisigInstance.submitTransaction(accounts[0], value3, "", {from: accounts[1]})
+        owner1Balance = toBN(await utils.balanceOf(web3, accounts[0]));
+        await multisigInstance.submitTransaction(accounts[0], value3, [], {from: accounts[1]})
 
         // Wallet and user balance remain the same.
         assert.equal(
@@ -145,11 +147,11 @@ contract('MultiSigWalletWithDailyLimit', (accounts) => {
         )
 
         // Daily withdraw is possible again
-        await multisigInstance.submitTransaction(accounts[0], value2, "", {from: accounts[1]})
+        await multisigInstance.submitTransaction(accounts[0], value2, [], {from: accounts[1]})
 
         // Wallet balance decreases and user balance increases.
         assert.equal(
-            owner1Balance.add(value2),
+            owner1Balance.add(toBN(value2)),
             (await utils.balanceOf(web3, accounts[0])).toString()
         )
         assert.equal(
@@ -162,7 +164,7 @@ contract('MultiSigWalletWithDailyLimit', (accounts) => {
         )
         // Try to execute a transaction tha does not exist fails
         const unknownTransactionId = 999
-        utils.assertThrowsAsynchronously(
+        await utils.assertThrowsAsynchronously(
             () => multisigInstance.executeTransaction(unknownTransactionId, {from: accounts[0]})
         )
     })
