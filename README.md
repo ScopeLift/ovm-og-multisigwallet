@@ -10,35 +10,26 @@ The purpose of multisig wallets is to increase security by requiring multiple pa
 
 Install
 -------------
-**NOTE:** Not compatible with current NodeJS LTS. Recommended NodeJS version is v6.17.1 (last LTS for v6).
 
-```
-# For Ubuntu/Debian you need to install libusb development headers
-apt install -y libusb-1.0-0-dev
+**NOTE**: We recommend installing [volta](https://volta.sh/) for managing versions of node and npm. This project is tested
+with node `v14.15.5`, and will automatically use said version if your system has volta installed.
 
-git clone https://github.com/gnosis/MultiSigWallet.git
-cd MultiSigWallet
+```bash
+git clone https://github.com/ScopeLift/ovm-og-multisigwallet.git
+cd ovm-og-multisigwallet
 
-# Latest NodeJS (v12.13.0) does NOT appear to work correctly.
-# You should use NVM and install Node v6.17.1 for best results: https://github.com/nvm-sh/nvm
-# Tested by @Privex on 2019-Nov-06 with v6.17.1 with success
-nvm install v6.17.1
-
-# node-gyp is required for 'npm install' to work correctly
-npm install node-gyp
-
+# Install contract dev dependencies
 npm install
-```
 
-Test
--------------
-### Run contract tests:
-```
+# Run contract tests
 npm test
-```
-### Run interface tests:
-```
-npm run test-dapp
+
+# Install frontend dev dependencies
+cd dapp
+npm install
+
+# Run frontend tests
+npm test
 ```
 
 Deploy Contracts
