@@ -20,7 +20,7 @@
     "certs": "openssl req -x509 -sha256 -nodes -newkey rsa:2048 -days 365 -keyout localhost.key -out localhost.crt -subj '/CN=localhost/O=Multisig/C=US'",
     "dist": "zip -x node_modules/\\* -x npm-debug.log -x tests/\\* -x config.karma.js -x .DS_Store -x .gitignore -r ../multisigWallet.zip ./",
     "postinstall": "grunt ngtemplates",
-    "start": "grunt bundle && npm run copy-package && http-server -a 0.0.0.0 -p 5000 src",
+    "start": "grunt bundle --force && npm run copy-package && http-server -a 0.0.0.0 -p 5000 src",
     "start-electron": "grunt bundle --mode=electron && NODE_ENV=development electron src/main.js",
     "test": "sh testrpc.sh"
   },
@@ -125,5 +125,8 @@
     "mac": {
       "icon": "./build/icon.icns"
     }
+  },
+  "volta": {
+    "node": "6.17.1"
   }
 }
