@@ -12,7 +12,7 @@ var txDefaultOrig =
   },
   gasLimit: 3141592,
   gasPrice: 18000000000,
-  ethereumNode: "https://mainnet.infura.io:443",
+  ethereumNode: "https://mainnet.infura.io/v3",
   connectionChecker: {
     method : "OPTIONS",
     url : "https://www.google.com",
@@ -141,19 +141,23 @@ if (isElectron) {
 var txDefault = {
   ethereumNodes : [
     {
-      url : "https://mainnet.infura.io:443",
+      url : "https://kovan.optimism.io/",
+      name: "Optimistic Ethereum Kovan"
+    },
+    {
+      url : "https://mainnet.infura.io/v3/",
       name: "Remote Mainnet"
     },
     {
-      url : "https://ropsten.infura.io:443",
+      url : "https://ropsten.infura.io/v3/",
       name: "Remote Ropsten"
     },
     {
-      url : "https://kovan.infura.io:443",
+      url : "https://kovan.infura.io/v3/",
       name: "Remote Kovan"
     },
     {
-      url : "https://rinkeby.infura.io:443",
+      url : "https://rinkeby.infura.io/v3/",
       name: "Remote Rinkeby"
     },
     {
@@ -174,6 +178,7 @@ var txDefault = {
       name: 'Kovan',
       address: '0x2c992817e0152a65937527b774c7a99a84603045'
     },
+
     'rinkeby': {
       name: 'Rinkeby',
       address: '0x19ba60816abca236baa096105df09260a4791418'
