@@ -3,9 +3,9 @@
   "version": "1.6.0",
   "description": "Ethereum MultiSignature Wallet. Main module, for installing all dependencies",
   "scripts": {
-    "test-dapp": "cd dapp && npm test",
-    "test": "sh truffle_test_runner.sh",
-    "start": "cd dapp && npm start"
+    "compile": "npx truffle compile",
+    "local-node": "npx ganache-cli",
+    "test": "npx concurrently --success first --kill-others \"npm run local-node &>/dev/null\" \"npx truffle test\""
   },
   "repository": {
     "type": "git",
@@ -24,11 +24,12 @@
     }
   },
   "dependencies": {
-    "truffle": "^5.1.66",
-    "ganache-cli": "^6.12.2"
+    "ganache-cli": "^6.12.2",
+    "truffle": "^5.1.66"
   },
   "devDependencies": {
     "babel-eslint": "7.2.3",
+    "concurrently": "^5.3.0",
     "eslint": "4.19.1",
     "eslint-config-airbnb": "15.1.0",
     "eslint-plugin-import": "2.12.0",
