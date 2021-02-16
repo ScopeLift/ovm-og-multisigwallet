@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.5.17;
 
 
 /// @title Test token contract - Allows testing of token transfers with multisig wallet.
@@ -57,7 +57,7 @@ contract TestToken {
         require(balances[msg.sender] >= _value);
         balances[msg.sender] -= _value;
         balances[_to] += _value;
-        Transfer(msg.sender, _to, _value);
+        emit Transfer(msg.sender, _to, _value);
         return true;
     }
 
@@ -74,7 +74,7 @@ contract TestToken {
         balances[_to] += _value;
         balances[_from] -= _value;
         allowed[_from][msg.sender] -= _value;
-        Transfer(_from, _to, _value);
+        emit Transfer(_from, _to, _value);
         return true;
     }
 
@@ -87,7 +87,7 @@ contract TestToken {
         returns (bool success)
     {
         allowed[msg.sender][_spender] = _value;
-        Approval(msg.sender, _spender, _value);
+        emit Approval(msg.sender, _spender, _value);
         return true;
     }
 
@@ -96,7 +96,7 @@ contract TestToken {
     /// @param _spender Address of token spender.
     /// @return Returns remaining allowance for spender.
     function allowance(address _owner, address _spender)
-        constant
+        view
         public
         returns (uint256 remaining)
     {
@@ -107,7 +107,7 @@ contract TestToken {
     /// @param _owner Address of token owner.
     /// @return Returns balance of owner.
     function balanceOf(address _owner)
-        constant
+        view
         public
         returns (uint256 balance)
     {

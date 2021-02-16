@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.5.17;
 import "./MultiSigWallet.sol";
 
 
@@ -25,7 +25,7 @@ contract MultiSigWalletWithDailyLimit is MultiSigWallet {
     /// @param _owners List of initial owners.
     /// @param _required Number of required confirmations.
     /// @param _dailyLimit Amount in wei, which can be withdrawn without confirmations on a daily basis.
-    function MultiSigWalletWithDailyLimit(address[] _owners, uint _required, uint _dailyLimit)
+    constructor(address[] memory _owners, uint _required, uint _dailyLimit)
         public
         MultiSigWallet(_owners, _required)
     {
@@ -39,7 +39,7 @@ contract MultiSigWalletWithDailyLimit is MultiSigWallet {
         onlyWallet
     {
         dailyLimit = _dailyLimit;
-        DailyLimitChange(_dailyLimit);
+        emit DailyLimitChange(_dailyLimit);
     }
 
     /// @dev Allows anyone to execute a confirmed transaction or ether withdraws until daily limit is reached.
@@ -57,9 +57,9 @@ contract MultiSigWalletWithDailyLimit is MultiSigWallet {
             if (!_confirmed)
                 spentToday += txn.value;
             if (external_call(txn.destination, txn.value, txn.data.length, txn.data))
-                Execution(transactionId);
+                emit Execution(transactionId);
             else {
-                ExecutionFailure(transactionId);
+                emit ExecutionFailure(transactionId);
                 txn.executed = false;
                 if (!_confirmed)
                     spentToday -= txn.value;
@@ -93,7 +93,7 @@ contract MultiSigWalletWithDailyLimit is MultiSigWallet {
     /// @return Returns amount.
     function calcMaxWithdraw()
         public
-        constant
+        view
         returns (uint)
     {
         if (now > lastDay + 24 hours)

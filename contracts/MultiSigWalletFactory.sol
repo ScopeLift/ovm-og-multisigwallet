@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.5.17;
 import "./Factory.sol";
 import "./MultiSigWallet.sol";
 
@@ -14,11 +14,12 @@ contract MultiSigWalletFactory is Factory {
     /// @param _owners List of initial owners.
     /// @param _required Number of required confirmations.
     /// @return Returns wallet address.
-    function create(address[] _owners, uint _required)
-        public
+    function create(address[] calldata _owners, uint _required)
+        external
         returns (address wallet)
     {
-        wallet = new MultiSigWallet(_owners, _required);
+        MultiSigWallet newWallet = new MultiSigWallet(_owners, _required);
+        wallet = address(newWallet);
         register(wallet);
     }
 }
