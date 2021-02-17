@@ -3,6 +3,11 @@ const MultisigWalletWithoutDailyLimit = artifacts.require('MultiSigWallet.sol')
 const MultisigWalletFactory = artifacts.require('MultiSigWalletWithDailyLimitFactory.sol')
 
 module.exports = deployer => {
+  if (deployer.network_id === 420) {
+    console.log("SKIP IT, SKIP IT");
+    return;
+  }
+
   const args = process.argv.slice()
   if (process.env.DEPLOY_FACTORY){
     deployer.deploy(MultisigWalletFactory)
