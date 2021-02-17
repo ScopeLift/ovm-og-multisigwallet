@@ -1,3 +1,7 @@
+const ganache = require('@eth-optimism/plugins/ganache');
+
+console.log('GANACHE', ganache);
+
 module.exports = {
   networks: {
     development: {
@@ -10,7 +14,7 @@ module.exports = {
   },
   compilers: {
     solc: {
-      version: "0.5.17",
+      version: "0.5.16",
     },
   },
 };
