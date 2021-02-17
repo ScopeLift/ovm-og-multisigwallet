@@ -48,9 +48,23 @@ async function assertThrowsAsynchronously(test, error) {
     throw new Error("Missing rejection" + (error ? " with "+error.name : ""));
 }
 
+let networkId = 0;
+
+async function isOptimisticEthereum(web3) {
+    if (networkId === 0) {
+        // Memoize the network id to avoid repeated slow, async calls
+        // to this RPC endpoint. Implicit assumption that the web3
+        // parameter is the same each time.
+        networkId = await web3.eth.net.getId();
+    }
+
+    return (420 === networkId);
+}
+
 Object.assign(exports, {
     getParamFromTxEvent,
     increaseTimestamp,
     balanceOf,
     assertThrowsAsynchronously,
+    isOptimisticEthereum,
 })

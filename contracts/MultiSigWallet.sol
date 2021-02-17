@@ -1,4 +1,4 @@
-pragma solidity ^0.5.17;
+pragma solidity ^0.5.16;
 
 
 /// @title Multisignature wallet - Allows multiple parties to agree on transactions before execution.
@@ -244,6 +244,7 @@ contract MultiSigWallet {
     // of the Solidity's code generator to produce a loop that copies tx.data into memory.
     function external_call(address destination, uint value, uint dataLength, bytes memory data) internal returns (bool) {
         bool result;
+
         assembly {
             let x := mload(0x40)   // "Allocate" memory for output (0x40 is where "free memory" pointer is stored by convention)
             let d := add(data, 32) // First 32 bytes are the padded length of data, so exclude that

@@ -5,7 +5,7 @@ const deployMultisig = (owners, confirmations) => {
 }
 
 const utils = require('./utils')
-const ONE_DAY = 24*3600
+const isOptimisticEthereum = utils.isOptimisticEthereum;
 
 contract('MultiSigWallet', (accounts) => {
     let multisigInstance
@@ -17,13 +17,18 @@ contract('MultiSigWallet', (accounts) => {
     })
 
     it('test execution after requirements changed', async () => {
-        const deposit = 1000
-        
-        // Send money to wallet contract
-        await new Promise((resolve, reject) => web3.eth.sendTransaction({to: multisigInstance.address, value: deposit, from: accounts[0]}, e => (e ? reject(e) : resolve())))
-        const balance = await utils.balanceOf(web3, multisigInstance.address)
-        assert.equal(balance.valueOf(), deposit)
-        
+        let isOVM = await isOptimisticEthereum(web3);
+
+        if (!isOVM) {
+            // On the OVM, we don't send ETH
+            const deposit = 1000;
+
+            // Send money to wallet contract
+            await new Promise((resolve, reject) => web3.eth.sendTransaction({to: multisigInstance.address, value: deposit, from: accounts[0]}, e => (e ? reject(e) : resolve())))
+            const balance = await utils.balanceOf(web3, multisigInstance.address)
+            assert.equal(balance.valueOf(), deposit)
+        }
+
         // Add owner wa_4
         const addOwnerData = multisigInstance.contract.methods.addOwner(accounts[3]).encodeABI();
         const transactionId = utils.getParamFromTxEvent(

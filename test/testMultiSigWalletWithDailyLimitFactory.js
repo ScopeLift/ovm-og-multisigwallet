@@ -4,11 +4,17 @@ const web3 = MultiSigWalletWithDailyLimitFactory.web3
 const toBN = web3.utils.toBN;
 
 const utils = require('./utils')
+const isOptimisticEthereum = utils.isOptimisticEthereum;
 
 contract('MultiSigWalletWithDailyLimitFactory', (accounts) => {
     let factoryInstance
     const dailyLimit = 3000
     const requiredConfirmations = 2
+    let isOVM;
+
+    before(async () => {
+        isOVM = await isOptimisticEthereum(web3);
+    });
 
     beforeEach(async () => {
         // [accounts[0], accounts[1]], requiredConfirmations, dailyLimit
@@ -26,15 +32,18 @@ contract('MultiSigWalletWithDailyLimitFactory', (accounts) => {
         assert.equal(walletAddress, multisigWalletAddressConfirmation)
         assert.ok(factoryInstance.isInstantiation(walletAddress))
 
-        // Send money to wallet contract
         const multisigInstance = await MultiSigWalletWithDailyLimit.at(walletAddress)
-        const deposit = 10000
-        await new Promise((resolve, reject) => web3.eth.sendTransaction({to: walletAddress, value: deposit, from: accounts[0]}, e => (e ? reject(e) : resolve())))
-        const balance = await utils.balanceOf(web3, walletAddress)        
-        assert.equal(balance.valueOf(), deposit)
-        assert.equal(dailyLimit, await multisigInstance.dailyLimit())
-        assert.equal(dailyLimit, await multisigInstance.calcMaxWithdraw())
-        
+
+        if (!isOVM) {
+            // Send money to wallet contract; on the OVM, we don't send ETH
+            const deposit = 10000
+            await new Promise((resolve, reject) => web3.eth.sendTransaction({to: walletAddress, value: deposit, from: accounts[0]}, e => (e ? reject(e) : resolve())))
+            const balance = await utils.balanceOf(web3, walletAddress)
+            assert.equal(balance.valueOf(), deposit)
+            assert.equal(dailyLimit, await multisigInstance.dailyLimit())
+            assert.equal(dailyLimit, await multisigInstance.calcMaxWithdraw())
+        }
+
         // Update daily limit
         const dailyLimitUpdated = 2000
         const dailyLimitEncoded = multisigInstance.contract.methods.changeDailyLimit(dailyLimitUpdated).encodeABI();

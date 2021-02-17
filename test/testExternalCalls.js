@@ -14,12 +14,18 @@ const deployCalls = () => {
 }
 
 const utils = require('./utils')
+const isOptimisticEthereum = utils.isOptimisticEthereum;
 
 contract('MultiSigWallet', (accounts) => {
     let multisigInstance
     let tokenInstance
     let callsInstance
     const requiredConfirmations = 2
+    let isOVM;
+
+    before(async () => {
+        isOVM = await isOptimisticEthereum(web3);
+    })
 
     beforeEach(async () => {
         multisigInstance = await deployMultisig([accounts[0], accounts[1]], requiredConfirmations)
@@ -28,6 +34,11 @@ contract('MultiSigWallet', (accounts) => {
         assert.ok(tokenInstance)
         callsInstance = await deployCalls()
         assert.ok(callsInstance)
+
+        if (isOVM) {
+            // On the OVM, we don't send ETH
+            return;
+        }
 
         const deposit = 10000000
 
@@ -43,12 +54,17 @@ contract('MultiSigWallet', (accounts) => {
         assert.ok(issueResult)
         // Encode transfer call for the multisig
         const transferEncoded = tokenInstance.contract.methods.transfer(accounts[1], 1000000).encodeABI();
+
+        const submission = await multisigInstance.submitTransaction(tokenInstance.address, 0, transferEncoded, {from: accounts[0]})
+
         const transactionId = utils.getParamFromTxEvent(
-            await multisigInstance.submitTransaction(tokenInstance.address, 0, transferEncoded, {from: accounts[0]}),
+            submission,
             'transactionId', null, 'Submission')
 
+        const confirmation = await multisigInstance.confirmTransaction(transactionId, {from: accounts[1]});
+
         const executedTransactionId = utils.getParamFromTxEvent(
-            await multisigInstance.confirmTransaction(transactionId, {from: accounts[1]}),
+            confirmation,
             'transactionId', null, 'Execution')
         // Check that transaction has been executed
         assert.ok(transactionId.eq(executedTransactionId))
@@ -109,10 +125,14 @@ contract('MultiSigWallet', (accounts) => {
             32 + 4,
             await callsInstance.lastMsgDataLength()
         )
-        assert.equal(
-            67890,
-            await callsInstance.lastMsgValue()
-        )
+
+        if (!isOVM) {
+            // On the OVM, msb.value is always 0
+            assert.equal(
+                67890,
+                await callsInstance.lastMsgValue()
+            );
+        }
     })
 
     it('callReceive2uint', async() => {
@@ -140,10 +160,13 @@ contract('MultiSigWallet', (accounts) => {
             32 + 32 + 4,
             await callsInstance.lastMsgDataLength()
         )
-        assert.equal(
-            4040404,
-            await callsInstance.lastMsgValue()
-        )
+        if (!isOVM) {
+            // On the OVM, msb.value is always 0
+            assert.equal(
+                4040404,
+                await callsInstance.lastMsgValue()
+            );
+        }
     })
 
     it('callReceive1bytes', async() => {
@@ -165,10 +188,13 @@ contract('MultiSigWallet', (accounts) => {
             868, // 800 bytes data + 32 bytes offset + 32 bytes data length + 4 bytes method signature
             await callsInstance.lastMsgDataLength()
         )
-        assert.equal(
-            10,
-            await callsInstance.lastMsgValue()
-        )
+        if (!isOVM) {
+            // On the OVM, msb.value is always 0
+            assert.equal(
+                10,
+                await callsInstance.lastMsgValue()
+            );
+        }
         assert.equal(
             dataHex,
             await callsInstance.byteArray1()

@@ -15,12 +15,17 @@ const deployMultisig = (owners, confirmations, limit) => {
 }
 
 const utils = require('./utils')
-const ONE_DAY = 24*3600
+const isOptimisticEthereum = utils.isOptimisticEthereum;
 
 contract('MultiSigWalletWithDailyLimit', (accounts) => {
-    let multisigInstance
+    let multisigInstance, tokenInstance, callsInstance;
     const dailyLimit = 3000
     const requiredConfirmations = 2
+    let isOVM;
+
+    before(async () => {
+        isOVM = await isOptimisticEthereum(web3);
+    });
 
     beforeEach(async () => {
         multisigInstance = await deployMultisig([accounts[0], accounts[1]], requiredConfirmations, dailyLimit)
@@ -29,6 +34,11 @@ contract('MultiSigWalletWithDailyLimit', (accounts) => {
         assert.ok(tokenInstance)
         callsInstance = await deployCalls()
         assert.ok(callsInstance)
+
+        if (isOVM) {
+            // On the OVM, we don't send ETH
+            return;
+        }
 
         const deposit = 10000000
 

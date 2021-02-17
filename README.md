@@ -21,8 +21,11 @@ cd ovm-og-multisigwallet
 # Install contract dev dependencies
 npm install
 
-# Run contract tests
+# Run contract tests for the EVM
 npm test
+
+# Run contract tests for the OVM
+npm run test:ovm
 
 # Install frontend dev dependencies
 cd dapp
