@@ -1,7 +1,3 @@
-const ganache = require('@eth-optimism/plugins/ganache');
-
-console.log('GANACHE', ganache);
-
 module.exports = {
   networks: {
     // development: {

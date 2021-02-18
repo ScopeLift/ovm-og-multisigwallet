@@ -19,10 +19,11 @@ contract('MultiSigWallet', (accounts) => {
     it('test execution after requirements changed', async () => {
         const deposit = 1000
         
+        // OPTIMISM: NO ETH
         // Send money to wallet contract
-        await new Promise((resolve, reject) => web3.eth.sendTransaction({to: multisigInstance.address, value: deposit, from: accounts[0]}, e => (e ? reject(e) : resolve())))
-        const balance = await utils.balanceOf(web3, multisigInstance.address)
-        assert.equal(balance.valueOf(), deposit)
+        // await new Promise((resolve, reject) => web3.eth.sendTransaction({to: multisigInstance.address, value: deposit, from: accounts[0]}, e => (e ? reject(e) : resolve())))
+        // const balance = await utils.balanceOf(web3, multisigInstance.address)
+        // assert.equal(balance.valueOf(), deposit)
         
         // Add owner wa_4
         const addOwnerData = multisigInstance.contract.methods.addOwner(accounts[3]).encodeABI();
