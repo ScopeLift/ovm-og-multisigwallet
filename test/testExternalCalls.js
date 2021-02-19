@@ -32,9 +32,9 @@ contract('MultiSigWallet', (accounts) => {
         const deposit = 10000000
 
         // Send money to wallet contract
-        await new Promise((resolve, reject) => web3.eth.sendTransaction({to: multisigInstance.address, value: deposit, from: accounts[0]}, e => (e ? reject(e) : resolve())))
-        const balance = await utils.balanceOf(web3, multisigInstance.address)
-        assert.equal(balance.valueOf(), deposit)
+        // await new Promise((resolve, reject) => web3.eth.sendTransaction({to: multisigInstance.address, value: deposit, from: accounts[0]}, e => (e ? reject(e) : resolve())))
+        // const balance = await utils.balanceOf(web3, multisigInstance.address)
+        // assert.equal(balance.valueOf(), deposit)
     })
 
     it('transferWithPayloadSizeCheck', async () => {
@@ -43,12 +43,31 @@ contract('MultiSigWallet', (accounts) => {
         assert.ok(issueResult)
         // Encode transfer call for the multisig
         const transferEncoded = tokenInstance.contract.methods.transfer(accounts[1], 1000000).encodeABI();
+
+        const submission = await multisigInstance.submitTransaction(tokenInstance.address, 0, transferEncoded, {from: accounts[0]})
+        //console.log("SUBMISSION", submission);
+
+        for (let index = 0; index < submission.logs.length; index++) {
+            const log = submission.logs[index];
+            console.log('SUB EVENT', log.event);
+            console.log(log.args);
+        }
+
         const transactionId = utils.getParamFromTxEvent(
-            await multisigInstance.submitTransaction(tokenInstance.address, 0, transferEncoded, {from: accounts[0]}),
+            submission,
             'transactionId', null, 'Submission')
 
+        const confirmation = await multisigInstance.confirmTransaction(transactionId, {from: accounts[1]});
+        console.log('CONFIRMATION', confirmation);
+
+        for (let index = 0; index < confirmation.logs.length; index++) {
+            const log = confirmation.logs[index];
+            console.log('CON EVENT', log.event);
+            console.log(log.args);
+        }
+
         const executedTransactionId = utils.getParamFromTxEvent(
-            await multisigInstance.confirmTransaction(transactionId, {from: accounts[1]}),
+            confirmation,
             'transactionId', null, 'Execution')
         // Check that transaction has been executed
         assert.ok(transactionId.eq(executedTransactionId))

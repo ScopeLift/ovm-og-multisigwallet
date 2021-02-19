@@ -7,7 +7,7 @@
     "compile:ovm": "truffle compile --config truffle-config-ovm.js",
     "local-node": "ganache-cli",
     "test": "truffle test",
-    "test:ovm": "truffle test --config truffle-config-ovm.js"
+    "test:ovm": "truffle test --config truffle-config-ovm.js test/testExternalCalls.js"
   },
   "repository": {
     "type": "git",
