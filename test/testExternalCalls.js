@@ -3,30 +3,30 @@ const web3 = MultiSigWallet.web3
 const TestToken = artifacts.require('TestToken')
 const TestCalls = artifacts.require('TestCalls')
 
-const deployMultisig = (owners, confirmations) => {
-    return MultiSigWallet.new(owners, confirmations)
+const deployMultisig = (owners, confirmations, deployer) => {
+    return MultiSigWallet.new(owners, confirmations, {from: deployer})
 }
-const deployToken = () => {
-	return TestToken.new()
+const deployToken = (deployer) => {
+	return TestToken.new({from: deployer})
 }
-const deployCalls = () => {
-	return TestCalls.new()
+const deployCalls = (deployer) => {
+	return TestCalls.new({from: deployer})
 }
 
 const utils = require('./utils')
 
-contract('MultiSigWallet', (accounts) => {
+contract.only('MultiSigWallet', (accounts) => {
     let multisigInstance
     let tokenInstance
     let callsInstance
     const requiredConfirmations = 2
 
     beforeEach(async () => {
-        multisigInstance = await deployMultisig([accounts[0], accounts[1]], requiredConfirmations)
+        multisigInstance = await deployMultisig([accounts[0], accounts[1]], requiredConfirmations,accounts[2])
         assert.ok(multisigInstance)
-        tokenInstance = await deployToken()
+        tokenInstance = await deployToken(accounts[3])
         assert.ok(tokenInstance)
-        callsInstance = await deployCalls()
+        callsInstance = await deployCalls(accounts[4])
         assert.ok(callsInstance)
 
         const deposit = 10000000
@@ -37,20 +37,27 @@ contract('MultiSigWallet', (accounts) => {
         // assert.equal(balance.valueOf(), deposit)
     })
 
-    it('transferWithPayloadSizeCheck', async () => {
+    it.only('transferWithPayloadSizeCheck', async () => {
+        console.log('token address', tokenInstance.address)
+        console.log('multisigInstance address', multisigInstance.address)
+        console.log('callsInstance address', callsInstance.address)
         // Issue tokens to the multisig address
         const issueResult = await tokenInstance.issueTokens(multisigInstance.address, 1000000, {from: accounts[0]})
+        let balanceCheck = (await tokenInstance.balanceOf(multisigInstance.address)).toString()
+        console.log(balanceCheck)
         assert.ok(issueResult)
         // Encode transfer call for the multisig
         const transferEncoded = tokenInstance.contract.methods.transfer(accounts[1], 1000000).encodeABI();
-
         const submission = await multisigInstance.submitTransaction(tokenInstance.address, 0, transferEncoded, {from: accounts[0]})
         //console.log("SUBMISSION", submission);
+        let confs = await multisigInstance.getConfirmations(0)
+        console.log('confs', confs)
+        console.log('expected:', accounts[0])
 
         for (let index = 0; index < submission.logs.length; index++) {
             const log = submission.logs[index];
-            console.log('SUB EVENT', log.event);
-            console.log(log.args);
+            // console.log('SUB EVENT', log.event);
+            // console.log(log.args);
         }
 
         const transactionId = utils.getParamFromTxEvent(
@@ -58,12 +65,17 @@ contract('MultiSigWallet', (accounts) => {
             'transactionId', null, 'Submission')
 
         const confirmation = await multisigInstance.confirmTransaction(transactionId, {from: accounts[1]});
+        confs = await multisigInstance.getConfirmations(0)
+        console.log('confs', confs)
+        console.log('expected:', accounts[0], accounts[1])
+        balanceCheck = (await tokenInstance.balanceOf(multisigInstance.address)).toString()
+        console.log(balanceCheck)
         console.log('CONFIRMATION', confirmation);
 
         for (let index = 0; index < confirmation.logs.length; index++) {
             const log = confirmation.logs[index];
-            console.log('CON EVENT', log.event);
-            console.log(log.args);
+            // console.log('CON EVENT', log.event);
+            // console.log(log.args);
         }
 
         const executedTransactionId = utils.getParamFromTxEvent(
