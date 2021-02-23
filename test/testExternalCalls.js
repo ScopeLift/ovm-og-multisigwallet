@@ -128,10 +128,12 @@ contract('MultiSigWallet', (accounts) => {
             32 + 4,
             await callsInstance.lastMsgDataLength()
         )
-        assert.equal(
-            67890,
-            await callsInstance.lastMsgValue()
-        )
+
+        // OVM: msgValue is always 0
+        // assert.equal(
+        //     67890,
+        //     await callsInstance.lastMsgValue()
+        // )
     })
 
     it('callReceive2uint', async() => {
@@ -159,10 +161,12 @@ contract('MultiSigWallet', (accounts) => {
             32 + 32 + 4,
             await callsInstance.lastMsgDataLength()
         )
-        assert.equal(
-            4040404,
-            await callsInstance.lastMsgValue()
-        )
+
+        // OVM: msgValue is always 0
+        // assert.equal(
+        //     4040404,
+        //     await callsInstance.lastMsgValue()
+        // )
     })
 
     it('callReceive1bytes', async() => {
@@ -185,13 +189,14 @@ contract('MultiSigWallet', (accounts) => {
             await callsInstance.lastMsgDataLength()
         )
         assert.equal(
-            10,
-            await callsInstance.lastMsgValue()
-        )
-        assert.equal(
             dataHex,
             await callsInstance.byteArray1()
         )
-    })
 
+        // // OVM: msgValue is always 0
+        // assert.equal(
+        //     10,
+        //     await callsInstance.lastMsgValue()
+        // )
+    })
 })
