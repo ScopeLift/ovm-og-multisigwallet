@@ -1,12 +1,19 @@
+const testMnemonic = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
+const HDWalletProvider = require('@truffle/hdwallet-provider');
+require('dotenv').config()
+
+const mnemonic = process.env.MNEMONIC;
+const infuraId = process.env.INFURA_ID;
+
 module.exports = {
   networks: {
-    // development: {
-    //   host: "localhost",
-    //   port: 8545,
-    //   network_id: "*", // Match any network id
-    //   gas: 4000000,
-    //   gasPrice: 10000000000, // 10 gwei
-    // }
+    kovan: {
+      network_id: 42,
+      provider: function() {
+        const endpoint = 'https://kovan.infura.io/v3/' + infuraId;
+        return new HDWalletProvider(mnemonic, endpoint);
+      }
+    }
   },
   compilers: {
     solc: {

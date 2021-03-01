@@ -37,15 +37,43 @@ npm test
 
 Deploy Contracts
 -------------
-### Deploy multisig wallet:
-```
-truffle migrate <account1,account2,...,accountN> <requiredConfirmations>
-```
-### Deploy multisig wallet with daily limit:
-```
-truffle migrate <account1,account2,...,accountN> <requiredConfirmations> <dailyLimit>
+The deployment script will deploy MultiSigWalletFactory, then instantiate the first MultiSigWallet with the deployer as the single owner
+
+#### Create .env file
+
+```bash
+cp .env.example .env
+# Edit your .env file and populate with valid values
 ```
 
+#### Deploy to local development EVM
+
+```bash
+npm run deploy
+```
+
+#### Deploy to other EVM network in `truffle-config.js`
+
+```bash
+npm run deploy -- --network=kovan
+```
+
+#### Deploy to local development OVM
+
+```bash
+npm run deploy:ovm
+```
+
+To run a local OVM network, see the [Optimism integration repo](https://github.com/ethereum-optimism/optimism-integration#scripts)
+
+#### Deploy to other OVM network
+
+```bash
+npm run deploy:ovm -- --network=kovan
+```
+
+Note the valid networks are `local`, `kovan`, and `mainnet`, and are **NOT** defined by the contents of `truffle-config-ovm.js`.
+See `deploy/deploy-ovm.js` for more information.
 
 Limitations
 -------------
