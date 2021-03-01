@@ -1,5 +1,10 @@
-const mnemonic = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
-const { ganache } = require('@eth-optimism/plugins/ganache')
+const testMnemonic = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
+const { ganache } = require('@eth-optimism/plugins/ganache');
+
+const HDWalletProvider = require('@truffle/hdwallet-provider');
+require('dotenv').config()
+
+const mnemonic = process.env.MNEMONIC;
 
 module.exports = {
   contracts_build_directory: './build/contracts/ovm',
@@ -8,7 +13,7 @@ module.exports = {
     test: {
       network_id: 420,
       provider: ganache.provider({
-        mnemonic: mnemonic,
+        mnemonic: testMnemonic,
         network_id: 420,
       }),
     },

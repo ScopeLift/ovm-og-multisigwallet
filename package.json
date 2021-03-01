@@ -5,9 +5,12 @@
   "scripts": {
     "compile": "truffle compile",
     "compile:ovm": "truffle compile --config truffle-config-ovm.js",
-    "local-node": "ganache-cli",
+    "local-node": "npx ganache-cli --port 7545 --networkId 5777",
     "test": "truffle test",
-    "test:ovm": "truffle test --config truffle-config-ovm.js"
+    "test:ovm": "truffle test --config truffle-config-ovm.js",
+    "deploy": "npm run compile && truffle exec deploy/deploy.js",
+    "deploy:ovm": "npm run compile:ovm && node ./deploy/deploy-ovm.js",
+    "interact": "node ./deploy/factory-interaction.js"
   },
   "repository": {
     "type": "git",
@@ -26,14 +29,17 @@
     }
   },
   "dependencies": {
+    "ethers": "^5.0.31",
     "ganache-cli": "^6.12.2",
     "truffle": "^5.1.66"
   },
   "devDependencies": {
-    "babel-eslint": "7.2.3",
-    "concurrently": "^5.3.0",
     "@eth-optimism/plugins": "0.0.14",
     "@eth-optimism/solc": "0.5.16-alpha.7",
+    "@truffle/hdwallet-provider": "^1.2.2",
+    "babel-eslint": "7.2.3",
+    "concurrently": "^5.3.0",
+    "dotenv": "^8.2.0",
     "eslint": "4.19.1",
     "eslint-config-airbnb": "15.1.0",
     "eslint-plugin-import": "2.12.0",
