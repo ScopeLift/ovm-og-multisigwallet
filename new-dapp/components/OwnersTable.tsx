@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import useSWR from 'swr';
-import { fetcher } from '../utils/fetcher';
+import { fetcher } from 'utils/fetcher';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';

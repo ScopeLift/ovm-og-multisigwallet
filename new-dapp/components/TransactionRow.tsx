@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import useSWR from 'swr';
-import { fetcher } from '../utils/fetcher';
+import { fetcher } from 'utils/fetcher';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
@@ -69,7 +69,9 @@ export const TransactionRow = ({ address, transactionId }) => {
       </td>
       <td className="p-2 border border-gray-500">
         <div className="flex flex-row items-center">
-          <div className="bg-pink-100 rounded p-3">{confirmations && confirmations.length}</div>
+          <div className="bg-pink-100 rounded p-3 mr-2">
+            {confirmations && confirmations.length}
+          </div>
           <ul>
             {confirmations && confirmations.map((address) => <li key={address}>{address}</li>)}
           </ul>

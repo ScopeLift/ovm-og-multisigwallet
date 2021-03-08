@@ -3,11 +3,8 @@ import { Web3Provider } from '@ethersproject/providers';
 import { isAddress } from '@ethersproject/address';
 
 export const Networks = {
-  MainNet: 1,
-  Ropsten: 3,
-  Rinkeby: 4,
-  Goerli: 5,
-  Kovan: 42,
+  KovanL2: 69,
+  MainnetL2: 420,
 };
 
 export interface IERC20 {
@@ -20,7 +17,7 @@ export interface IERC20 {
 export const TOKENS_BY_NETWORK: {
   [key: number]: IERC20[];
 } = {
-  [Networks.MainNet]: [
+  [Networks.KovanL2]: [
     {
       address: '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2',
       name: 'Maker',
@@ -34,7 +31,7 @@ export const TOKENS_BY_NETWORK: {
       decimals: 18,
     },
   ],
-  [Networks.Rinkeby]: [
+  [Networks.MainnetL2]: [
     {
       address: '0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa',
       symbol: 'DAI',
@@ -49,7 +46,6 @@ export const TOKENS_BY_NETWORK: {
     },
   ],
 };
-export const shorter = (str) => (str?.length > 8 ? str.slice(0, 6) + '...' + str.slice(-4) : str);
 
 export const fetcher = (library: Web3Provider, abi?: any) => (...args) => {
   console.log(library);

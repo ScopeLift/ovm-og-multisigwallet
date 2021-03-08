@@ -2,7 +2,7 @@ import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import useSWR from 'swr';
 import { useEffect, useState } from 'react';
-import { fetcher } from '../utils/fetcher';
+import { fetcher } from 'utils/fetcher';
 
 export const BlockNumber = () => {
   const { account, library } = useWeb3React<Web3Provider>();
@@ -32,5 +32,9 @@ export const BlockNumber = () => {
   if (!blockNumber) {
     return <div>...</div>;
   }
-  return <div>Block Number: {blockNumber.toString()}</div>;
+  return (
+    <div className="py-1 px-2 rounded bg-gradient-to-r from-purple-400 to-red-500 text-xs">
+      Block Number: {blockNumber.toString()}
+    </div>
+  );
 };
