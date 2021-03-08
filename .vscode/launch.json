@@ -13,6 +13,14 @@
             "userDataDir": true
         },
         {
+            "name": "Launch new dapp",
+            "request": "launch",
+            "type": "pwa-chrome",
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}/new-dapp",
+            "userDataDir": true
+        },
+        {
             "name": "Launch via NPM",
             "type": "node",
             "request": "launch",

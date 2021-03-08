@@ -81,3 +81,5 @@ dapp/src/package.json
 
 # environment config
 .env
+
+.next

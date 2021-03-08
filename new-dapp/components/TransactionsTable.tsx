@@ -1,0 +1,68 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import useSWR from 'swr';
+import { fetcher } from '../utils/fetcher';
+import { useWeb3React } from '@web3-react/core';
+import { Web3Provider } from '@ethersproject/providers';
+import { Contract } from '@ethersproject/contracts';
+import { abi } from '../../build/contracts/ovm/MultiSigWallet.json';
+import { TransactionRow } from './TransactionRow';
+
+export const TransactionTable = ({ address }) => {
+  const { account, library } = useWeb3React<Web3Provider>();
+  let { data: transactionCount, mutate } = useSWR(library ? [address, 'transactionCount'] : null, {
+    fetcher: fetcher(library, abi),
+  });
+
+  useEffect(() => {
+    if (!library) return;
+    const contract = new Contract(address, abi);
+    const submission = contract.filters.Submission(null);
+
+    library.on(submission, (event) => {
+      console.log('submission', { event });
+      mutate(undefined, true);
+    });
+    return () => {
+      library.removeAllListeners(submission);
+    };
+  }, [library]);
+
+  if (!transactionCount) return <div>...</div>;
+
+  const parsedTxCount = parseInt(transactionCount.toString());
+  const cellStyle = 'border border-gray-500';
+  return (
+    <>
+      <div className="flex items-center my-5">
+        <h2 className="block text-xl mr-2">Transactions</h2>
+        <div>
+          <button
+            className="bg-gradient-to-r from-green-400 to-blue-500 px-3 py-2 text-white text-sm font-semibold rounded"
+            onClick={() => false}
+          >
+            Add new
+          </button>
+        </div>
+      </div>
+      <table className="table-auto font-mono border border-gray-500">
+        <thead>
+          <tr>
+            <th className={cellStyle}>ID</th>
+            <th className={cellStyle}>Destination</th>
+            <th className={cellStyle}>Data</th>
+            <th className={cellStyle}>Confirmations</th>
+            <th className={cellStyle}>Executed?</th>
+          </tr>
+        </thead>
+        <tbody>
+          {[...Array(parsedTxCount).keys()]
+            .reverse()
+            .slice(0, 5)
+            .map((id) => (
+              <TransactionRow key={id} address={address} transactionId={id} cellStyle={cellStyle} />
+            ))}
+        </tbody>
+      </table>
+    </>
+  );
+};
