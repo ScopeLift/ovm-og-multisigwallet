@@ -21,7 +21,8 @@
     "paths": {
       "components/*": [ "./components/*" ],
       "utils/*": ["./utils/*"],
-      "hooks/*": ["./hooks/*"]
+      "hooks/*": ["./hooks/*"],
+      "state/*": ["./state/*"]
     }
   },
   "include": [

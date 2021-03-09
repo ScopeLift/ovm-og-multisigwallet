@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { Modal } from 'components/Modal';
 import { abi as multisigAbi } from '../../build/contracts/ovm/MultiSigWallet.json';
-
+import { ModalStateContext } from 'state/Modal';
 export const TxModal = ({ address }) => {
   const { library } = useWeb3React<Web3Provider>();
+  const { setContent, setVisible } = useContext(ModalStateContext);
   const [destination, setDestination] = useState('');
   const [abi, setAbi] = useState('');
   const [methods, setMethods] = useState([]);
@@ -70,6 +71,8 @@ export const TxModal = ({ address }) => {
           )
         );
       const receipt = tx.wait();
+      setVisible(false);
+      setContent([]);
       return receipt;
     } catch (e) {
       setError(e.message);

@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React from 'react';
 import { Web3Provider } from '@ethersproject/providers';
-import { Wallet } from '@ethersproject/wallet';
 import { Web3ReactProvider, useWeb3React, UnsupportedChainIdError } from '@web3-react/core';
 import {
   NoEthereumProviderError,
@@ -14,6 +13,8 @@ import { TransactionTable } from 'components/TransactionsTable';
 import { Connection } from 'components/Connection';
 import { NetworkName } from 'components/NetworkName';
 import { TxModal } from 'components/TxModal';
+import { WithModal } from 'state/Modal';
+
 // MULTISIG ADDR: 0x7b671dBae4e4Ad733Cd116aeAE378302cEAB7A06
 
 function getLibrary(provider: any): Web3Provider {
@@ -52,22 +53,23 @@ const App = () => {
 
   return (
     <>
-      <TxModal address={address} />
-      <div className="container mx-auto px-4">
-        <div className="flex justify-end mt-2">
-          <ChainId />
-          <BlockNumber />
-          <NetworkName />
-          <Connection />
+      <WithModal>
+        <div className="container mx-auto px-4">
+          <div className="flex justify-end mt-2">
+            <ChainId />
+            <BlockNumber />
+            <NetworkName />
+            <Connection />
+          </div>
+          <div>
+            {!!error && (
+              <h4 style={{ marginTop: '1rem', marginBottom: '0' }}>{getErrorMessage(error)}</h4>
+            )}
+          </div>
+          <TransactionTable address={address} />
+          <Owners address={address} />
         </div>
-        <div>
-          {!!error && (
-            <h4 style={{ marginTop: '1rem', marginBottom: '0' }}>{getErrorMessage(error)}</h4>
-          )}
-        </div>
-        <TransactionTable address={address} />
-        <Owners address={address} />
-      </div>
+      </WithModal>
     </>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useContext } from 'react';
 import useSWR from 'swr';
 import { fetcher } from 'utils/fetcher';
 import { useWeb3React } from '@web3-react/core';
@@ -6,9 +6,12 @@ import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { abi } from '../../build/contracts/ovm/MultiSigWallet.json';
 import { TransactionRow } from 'components/TransactionRow';
+import { TxModal } from 'components/TxModal';
+import { ModalStateContext } from 'state/Modal';
 
 export const TransactionTable = ({ address }) => {
   const { account, library } = useWeb3React<Web3Provider>();
+  const { setContent, setVisible } = useContext(ModalStateContext);
   let { data: transactionCount, mutate } = useSWR(library ? [address, 'transactionCount'] : null, {
     fetcher: fetcher(library, abi),
   });
@@ -38,7 +41,10 @@ export const TransactionTable = ({ address }) => {
         <div>
           <button
             className="bg-gradient-to-r from-green-400 to-blue-500 px-3 py-2 text-white text-sm font-semibold rounded"
-            onClick={() => false}
+            onClick={() => {
+              setContent(<TxModal address={address} />);
+              setVisible(true);
+            }}
           >
             Add new
           </button>
