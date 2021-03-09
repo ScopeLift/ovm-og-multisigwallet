@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React } from '@web3-react/core';
 import { useEagerConnect, useInactiveListener } from 'hooks/react-web3';
-import { injected } from 'utils/connectors';
+import { injected, ledger, trezor } from 'utils/connectors';
 import { truncateAddress } from 'utils/truncate';
 
 enum ConnectorNames {
@@ -10,8 +10,8 @@ enum ConnectorNames {
   // Network = 'Network',
   // WalletConnect = 'WalletConnect',
   // WalletLink = 'WalletLink',
-  // Ledger = 'Ledger',
-  // Trezor = 'Trezor',
+  Ledger = 'Ledger',
+  Trezor = 'Trezor',
   // Lattice = 'Lattice',
   // Frame = 'Frame',
   // Authereum = 'Authereum',
@@ -23,6 +23,8 @@ enum ConnectorNames {
 
 const connectorsByName: { [connectorName in ConnectorNames]: any } = {
   [ConnectorNames.Injected]: injected,
+  [ConnectorNames.Ledger]: ledger,
+  [ConnectorNames.Trezor]: trezor,
 };
 
 export const Connection = () => {
