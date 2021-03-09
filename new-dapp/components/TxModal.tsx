@@ -2,9 +2,10 @@ import { useState, useEffect, useContext } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
-import { Modal } from 'components/Modal';
-import { abi as multisigAbi } from '../../build/contracts/ovm/MultiSigWallet.json';
-import { ModalStateContext } from 'state/Modal';
+import { Modal, ModalStateContext } from 'components/Modal';
+import { abi as multisigAbi } from 'abi/MultiSigWallet.json';
+import Image from 'next/image';
+
 export const TxModal = ({ address }) => {
   const { library } = useWeb3React<Web3Provider>();
   const { setContent, setVisible } = useContext(ModalStateContext);
@@ -83,7 +84,17 @@ export const TxModal = ({ address }) => {
   const inputStyle = 'border border-gray-500 w-80';
   const labelStyle = '';
   return (
-    <Modal closeModal={() => {}}>
+    <Modal>
+      <div className="flex justify-between w-full bg-gray-200 p-3 font-semibold">
+        <h2>Send Transaction</h2>
+        <Image
+          src="/x.svg"
+          width="20"
+          height="20"
+          className="opacity-50 hover:opacity-80 hover:cursor-pointer"
+          onClick={() => setVisible(false)}
+        />
+      </div>
       {error && (
         <div className="bg-red-100 border border-red-500 text-red-500 p-3 m-5">{error}</div>
       )}
@@ -119,7 +130,10 @@ export const TxModal = ({ address }) => {
                   <label>
                     {param.name}: {param.type}
                   </label>
-                  <input onChange={(e) => handleArgs(param.name, e.target.value)} />
+                  <input
+                    className={inputStyle}
+                    onChange={(e) => handleArgs(param.name, e.target.value)}
+                  />
                 </li>
               ))}
             </>

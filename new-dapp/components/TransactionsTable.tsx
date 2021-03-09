@@ -4,10 +4,10 @@ import { fetcher } from 'utils/fetcher';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
-import { abi } from '../../build/contracts/ovm/MultiSigWallet.json';
+import { abi } from 'abi/MultiSigWallet.json';
 import { TransactionRow } from 'components/TransactionRow';
 import { TxModal } from 'components/TxModal';
-import { ModalStateContext } from 'state/Modal';
+import { ModalStateContext } from 'components/Modal';
 
 export const TransactionTable = ({ address }) => {
   const { account, library } = useWeb3React<Web3Provider>();

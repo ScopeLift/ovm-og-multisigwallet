@@ -48,48 +48,37 @@ export const Connection = () => {
         const activating = currentConnector === activatingConnector;
         const connected = currentConnector === connector;
         const disabled = !triedEager || !!activatingConnector || connected || !!error;
-
+        console.log('connected: ', connected, '\nactivating: ', activating, '\naccount: ', account);
         return (
           <button
-            className={
-              (activating ? 'border border-gray-500' : connected ? 'green' : 'unset') +
-              (disabled ? 'unset' : 'pointer')
-            }
+            className="flex items-center ml-4"
             disabled={disabled}
             key={name}
-            onClick={() => {
-              setActivatingConnector(currentConnector);
-              activate(connectorsByName[name]);
-            }}
+            onClick={
+              connected
+                ? deactivate
+                : !activating
+                ? () => {
+                    setActivatingConnector(currentConnector);
+                    activate(connectorsByName[name]);
+                  }
+                : () => {}
+            }
           >
-            <button
-              className="flex items-center ml-4"
-              onClick={
-                connected
-                  ? deactivate
-                  : !activating
-                  ? () => {
-                      setActivatingConnector(currentConnector);
-                      activate(connectorsByName[name]);
-                    }
-                  : () => {}
+            <div
+              className={
+                'h-3 w-3 border-2 rounded-full mr-2 ' +
+                (connected ? 'bg-green-400' : activating ? 'bg-yellow-600' : 'bg-red-600')
               }
-            >
-              <div
-                className={
-                  'h-3 w-3 border-2 rounded-full mr-2 ' +
-                  (connected ? 'bg-green-400' : activating ? 'bg-yellow-600' : 'bg-red-600')
-                }
-              ></div>
+            ></div>
 
-              {connected && account ? (
-                <span className="font-mono">{truncateAddress(account)}</span>
-              ) : activating ? (
-                'Activating...'
-              ) : (
-                'Connect Wallet'
-              )}
-            </button>
+            {connected && account ? (
+              <span className="font-mono">{truncateAddress(account)}</span>
+            ) : activating ? (
+              'Activating...'
+            ) : (
+              'Connect Wallet'
+            )}
           </button>
         );
       })}

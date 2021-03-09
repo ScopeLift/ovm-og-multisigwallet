@@ -12,8 +12,7 @@ import { Owners } from 'components/OwnersTable';
 import { TransactionTable } from 'components/TransactionsTable';
 import { Connection } from 'components/Connection';
 import { NetworkName } from 'components/NetworkName';
-import { TxModal } from 'components/TxModal';
-import { WithModal } from 'state/Modal';
+import { WithModal } from 'components/Modal';
 
 // MULTISIG ADDR: 0x7b671dBae4e4Ad733Cd116aeAE378302cEAB7A06
 
@@ -63,7 +62,9 @@ const App = () => {
           </div>
           <div>
             {!!error && (
-              <h4 style={{ marginTop: '1rem', marginBottom: '0' }}>{getErrorMessage(error)}</h4>
+              <h4 className="mt-5 border border-red-400 bg-red-100 text-red-400">
+                {getErrorMessage(error)}
+              </h4>
             )}
           </div>
           <TransactionTable address={address} />

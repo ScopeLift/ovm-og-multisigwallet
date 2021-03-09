@@ -1,6 +1,6 @@
 import { Modal } from 'components/Modal';
 import { useEffect, useContext } from 'react';
-import { ModalStateContext } from 'state/Modal';
+import { ModalStateContext } from 'components/Modal';
 
 /**
  * Hook that alerts clicks outside of the passed ref

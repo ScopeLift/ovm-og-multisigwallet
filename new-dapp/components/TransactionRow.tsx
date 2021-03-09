@@ -4,7 +4,7 @@ import { fetcher } from 'utils/fetcher';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
-import { abi } from '../../build/contracts/ovm/MultiSigWallet.json';
+import { abi } from 'abi/MultiSigWallet.json';
 import { truncateAddress } from 'utils/truncate';
 
 export const TransactionRow = ({ address, transactionId, cellStyle }) => {

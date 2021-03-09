@@ -7,7 +7,8 @@
     "eslint": "^7.21.0",
     "husky": "^5.1.3",
     "prettier": "^2.2.1",
-    "typescript": "^4.2.2"
+    "typescript": "^4.2.2",
+    "vercel": "^21.3.3"
   },
   "dependencies": {
     "@ethersproject/providers": "^5.0.23",
@@ -23,6 +24,13 @@
     "swr": "^0.4.2",
     "tailwindcss": "^2.0.3",
     "web3-react": "^5.0.5"
+  },
+  "scripts": {
+    "build": "next build",
+    "dev": "yarn copy-abi && next",
+    "deploy": "yarn copy-abi && vercel",
+    "copy-abi": "cp ../build/contracts/ovm/MultiSigWallet.json ./abi/",
+    "clean-abi": "rm -rf ./abi/*"
   },
   "volta": {
     "node": "14.16.0",
