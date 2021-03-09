@@ -6,6 +6,7 @@ import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { Wallet } from '@ethersproject/wallet';
 import { abi } from '../../build/contracts/ovm/MultiSigWallet.json';
+import { truncateAddress } from 'utils/truncate';
 
 export const Owners = ({ address }) => {
   const { account, library } = useWeb3React<Web3Provider>();
@@ -106,7 +107,7 @@ export const Owners = ({ address }) => {
         <tbody>
           {owners.map((owner) => (
             <tr key={owner}>
-              <td className={cellStyle}>{owner}</td>
+              <td className={cellStyle}>{truncateAddress(owner)}</td>
               <td className={cellStyle}>
                 <button className="p-2">Edit</button>
                 <button className="p-2" onClick={() => replaceOwner(owner, newOwner)}>

@@ -83,7 +83,7 @@ export const Connection = () => {
               ></div>
 
               {connected && account ? (
-                <button onClick={deactivate}>{truncateAddress(account)}</button>
+                <span className="font-mono">{truncateAddress(account)}</span>
               ) : activating ? (
                 'Activating...'
               ) : (

@@ -5,7 +5,7 @@ export const ChainId = () => {
   if (!chainId) return null;
   return (
     <>
-      <div className="py-1 px-2 rounded bg-gradient-to-r from-purple-400 to-red-500 text-xs">
+      <div className="py-1 px-2 rounded border border-gray-400 text-xs text-gray-400 mr-2">
         Chain Id: {chainId}
       </div>
     </>

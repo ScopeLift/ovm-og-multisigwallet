@@ -30,7 +30,7 @@ export const TransactionTable = ({ address }) => {
   if (!transactionCount) return <div>...</div>;
 
   const parsedTxCount = parseInt(transactionCount.toString());
-  const cellStyle = 'border border-gray-500';
+  const cellStyle = 'border border-gray-500 p-2';
   return (
     <>
       <div className="flex items-center my-5">
@@ -44,7 +44,7 @@ export const TransactionTable = ({ address }) => {
           </button>
         </div>
       </div>
-      <table className="table-auto font-mono border border-gray-500">
+      <table className="table-auto font-mono border border-gray-500 w-full">
         <thead>
           <tr>
             <th className={cellStyle}>ID</th>

@@ -12,6 +12,8 @@ import { BlockNumber } from 'components/BlockNumber';
 import { Owners } from 'components/OwnersTable';
 import { TransactionTable } from 'components/TransactionsTable';
 import { Connection } from 'components/Connection';
+import { NetworkName } from 'components/NetworkName';
+import { TxModal } from 'components/TxModal';
 // MULTISIG ADDR: 0x7b671dBae4e4Ad733Cd116aeAE378302cEAB7A06
 
 function getLibrary(provider: any): Web3Provider {
@@ -44,25 +46,28 @@ const Page = () => {
 };
 
 const App = () => {
-  const context = useWeb3React<Web3Provider>();
-  const { error } = context;
+  const { error } = useWeb3React<Web3Provider>();
 
   const address = '0x7b671dBae4e4Ad733Cd116aeAE378302cEAB7A06';
 
   return (
     <>
-      <div className="flex justify-end">
-        <ChainId />
-        <BlockNumber />
-        <Connection />
+      <TxModal address={address} />
+      <div className="container mx-auto px-4">
+        <div className="flex justify-end mt-2">
+          <ChainId />
+          <BlockNumber />
+          <NetworkName />
+          <Connection />
+        </div>
+        <div>
+          {!!error && (
+            <h4 style={{ marginTop: '1rem', marginBottom: '0' }}>{getErrorMessage(error)}</h4>
+          )}
+        </div>
+        <TransactionTable address={address} />
+        <Owners address={address} />
       </div>
-      <div>
-        {!!error && (
-          <h4 style={{ marginTop: '1rem', marginBottom: '0' }}>{getErrorMessage(error)}</h4>
-        )}
-      </div>
-      <TransactionTable address={address} />
-      <Owners address={address} />
     </>
   );
 };

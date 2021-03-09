@@ -5,8 +5,9 @@ import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { abi } from '../../build/contracts/ovm/MultiSigWallet.json';
+import { truncateAddress } from 'utils/truncate';
 
-export const TransactionRow = ({ address, transactionId }) => {
+export const TransactionRow = ({ address, transactionId, cellStyle }) => {
   const { account, library } = useWeb3React<Web3Provider>();
 
   const { data: transaction, mutate } = useSWR(
@@ -60,14 +61,14 @@ export const TransactionRow = ({ address, transactionId }) => {
   if (!transaction) return <tr></tr>;
   return (
     <tr>
-      <td className="p-2 border border-gray-500">{transactionId}</td>
-      <td className="p-2 border border-gray-500">
-        <span className="truncate block w-44">{transaction.destination}</span>
+      <td className={cellStyle}>{transactionId}</td>
+      <td className={cellStyle}>
+        <span className="block w-44">{truncateAddress(transaction.destination)}</span>
       </td>
-      <td className="p-2 border border-gray-500">
+      <td className={cellStyle}>
         <span className="truncate block w-44">{transaction.data}</span>
       </td>
-      <td className="p-2 border border-gray-500">
+      <td className={cellStyle}>
         <div className="flex flex-row items-center">
           <div className="bg-pink-100 rounded p-3 mr-2">
             {confirmations && confirmations.length}
@@ -77,7 +78,7 @@ export const TransactionRow = ({ address, transactionId }) => {
           </ul>
         </div>
       </td>
-      <td className="p-2 border border-gray-500">{transaction.executed.toString()}</td>
+      <td className={cellStyle}>{transaction.executed.toString()}</td>
     </tr>
   );
 };
