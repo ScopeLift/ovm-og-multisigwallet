@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Chrome",
+            "name": "Launch old dapp",
             "request": "launch",
             "type": "pwa-chrome",
             "url": "http://localhost:5000",
