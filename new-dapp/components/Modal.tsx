@@ -5,38 +5,41 @@ import { createContext, useState, useContext } from 'react';
 type ContextProps = {
   visible: boolean;
   content: any[];
-  setVisible: Function;
-  setContent: Function;
+  setModalVisible: Function;
+  setModalContent: Function;
+  clearModal: Function;
 };
 
-export const ModalStateContext = createContext<Partial<ContextProps>>({
+export const ModalContext = createContext<Partial<ContextProps>>({
   visible: false,
   content: [],
-  setVisible: () => {},
-  setContent: () => {},
+  setModalVisible: () => {},
+  setModalContent: () => {},
+  clearModal: () => {},
 });
 
 export const WithModal = ({ children }) => {
-  const [visible, setVisible] = useState(false);
-  const [content, setContent] = useState([]);
-  const setBoth = (visible, content) => {
-    setVisible(visible);
-    setContent(content);
+  const [visible, setModalVisible] = useState(false);
+  const [content, setModalContent] = useState([]);
+  const clearModal = () => {
+    setModalVisible(false);
+    setModalContent([]);
   };
   return (
-    <ModalStateContext.Provider
+    <ModalContext.Provider
       value={{
         visible,
         content,
-        setVisible,
-        setContent,
+        setModalVisible,
+        setModalContent,
+        clearModal,
       }}
     >
       <div className={!visible ? 'hidden' : ''}>
         <Modal>{content}</Modal>
       </div>
       {children}
-    </ModalStateContext.Provider>
+    </ModalContext.Provider>
   );
 };
 
@@ -47,7 +50,7 @@ export const Modal = ({ children }) => {
     <div className="fixed inset-0 w-full h-full z-20 bg-black bg-opacity-50 duration-300 overflow-y-auto">
       <div
         ref={wrapperRef}
-        className="relative sm:w-3/4 md:w-1/2 lg:w-1/3 mx-2 sm:mx-auto my-10 opacity-100"
+        className="relative sm:w-3/4 md:w-1/2 lg:w-1/2 mx-2 sm:mx-auto my-10 opacity-100"
       >
         <div className="bg-white shadow-lg rounded-md text-gray-900 z-20">{children}</div>
       </div>

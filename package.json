@@ -10,6 +10,7 @@
     "test:ovm": "truffle test --config truffle-config-ovm.js",
     "deploy": "npm run compile && truffle exec deploy/deploy.js",
     "deploy:ovm": "npm run compile:ovm && node ./deploy/deploy-ovm.js",
+    "deploy-test-token:ovm": "npm run compile:ovm && node ./deploy/deploy-test-token-ovm.js",
     "interact": "node ./deploy/factory-interaction.js"
   },
   "repository": {

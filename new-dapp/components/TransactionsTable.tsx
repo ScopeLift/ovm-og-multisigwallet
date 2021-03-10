@@ -7,11 +7,17 @@ import { Contract } from '@ethersproject/contracts';
 import { abi } from 'abi/MultiSigWallet.json';
 import { TransactionRow } from 'components/TransactionRow';
 import { TxModal } from 'components/TxModal';
-import { ModalStateContext } from 'components/Modal';
+import { ModalContext } from 'components/Modal';
 
+/**
+ * Transaction table has 3 states:
+ *  - connected properly and displaying rows
+ *  - connected to a network but no signer
+ *  - not connected to a network
+ */
 export const TransactionTable = ({ address }) => {
-  const { account, library } = useWeb3React<Web3Provider>();
-  const { setContent, setVisible } = useContext(ModalStateContext);
+  const { library } = useWeb3React<Web3Provider>();
+  const { setModalContent, setModalVisible } = useContext(ModalContext);
   let { data: transactionCount, mutate } = useSWR(library ? [address, 'transactionCount'] : null, {
     fetcher: fetcher(library, abi),
   });
@@ -31,7 +37,7 @@ export const TransactionTable = ({ address }) => {
   }, [library]);
 
   if (!transactionCount) return <div>...</div>;
-
+  // const status = transactionCount === undefiened ? "off" : transactionCount ===
   const parsedTxCount = parseInt(transactionCount.toString());
   const cellStyle = 'border border-gray-500 p-2';
   return (
@@ -42,9 +48,10 @@ export const TransactionTable = ({ address }) => {
           <button
             className="bg-gradient-to-r from-green-400 to-blue-500 px-3 py-2 text-white text-sm font-semibold rounded"
             onClick={() => {
-              setContent(<TxModal address={address} />);
-              setVisible(true);
+              setModalContent(<TxModal address={address} />);
+              setModalVisible(true);
             }}
+            // disabled={disabled}
           >
             Add new
           </button>

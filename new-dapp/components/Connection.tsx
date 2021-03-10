@@ -5,7 +5,7 @@ import { useEagerConnect, useInactiveListener } from 'hooks/react-web3';
 import { injected, ledger, trezor } from 'utils/connectors';
 import Image from 'next/image';
 import { truncateAddress } from 'utils/truncate';
-import { ModalStateContext } from './Modal';
+import { ModalContext } from './Modal';
 
 enum ConnectorNames {
   Injected = 'Injected',
@@ -30,7 +30,7 @@ const connectorsByName: { [connectorName in ConnectorNames]: any } = {
 };
 
 const ConnectionModal = ({ props }) => {
-  const { setVisible } = useContext(ModalStateContext);
+  const { setModalVisible } = useContext(ModalContext);
   const { connector, activate, deactivate, error } = useWeb3React<Web3Provider>();
   const { activatingConnector, setActivatingConnector, triedEager } = props;
   return (
@@ -42,7 +42,7 @@ const ConnectionModal = ({ props }) => {
           width="20"
           height="20"
           className="opacity-50 hover:opacity-80 hover:cursor-pointer"
-          onClick={() => setVisible(false)}
+          onClick={() => setModalVisible(false)}
         />
       </div>
       <ul className="mx-2">
@@ -87,7 +87,7 @@ export const Connection = () => {
     active,
     error,
   } = useWeb3React<Web3Provider>();
-  const { setVisible, setContent } = useContext(ModalStateContext);
+  const { setModalVisible, setModalContent } = useContext(ModalContext);
   // handle logic to recognize the connector currently being activated
   const [activatingConnector, setActivatingConnector] = React.useState<any>();
   React.useEffect(() => {
@@ -106,10 +106,10 @@ export const Connection = () => {
       <button
         className="flex items-center ml-4"
         onClick={() => {
-          setContent(
+          setModalContent(
             <ConnectionModal props={{ activatingConnector, setActivatingConnector, triedEager }} />
           );
-          setVisible(true);
+          setModalVisible(true);
         }}
       >
         <div

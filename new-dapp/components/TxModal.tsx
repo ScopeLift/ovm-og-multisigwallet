@@ -2,13 +2,13 @@ import { useState, useEffect, useContext } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
-import { Modal, ModalStateContext } from 'components/Modal';
+import { Modal, ModalContext } from 'components/Modal';
 import { abi as multisigAbi } from 'abi/MultiSigWallet.json';
 import Image from 'next/image';
 
 export const TxModal = ({ address }) => {
   const { library } = useWeb3React<Web3Provider>();
-  const { setContent, setVisible } = useContext(ModalStateContext);
+  const { setModalContent, setModalVisible } = useContext(ModalContext);
   const [destination, setDestination] = useState('');
   const [abi, setAbi] = useState('');
   const [methods, setMethods] = useState([]);
@@ -35,11 +35,6 @@ export const TxModal = ({ address }) => {
     setArgs({});
     if (!method) return;
     setParams(
-      JSON.parse(abi)
-        .filter((entry) => entry.type === 'function')
-        .find((entry) => entry.name === method).inputs
-    );
-    console.log(
       JSON.parse(abi)
         .filter((entry) => entry.type === 'function')
         .find((entry) => entry.name === method).inputs
@@ -72,8 +67,8 @@ export const TxModal = ({ address }) => {
           )
         );
       const receipt = tx.wait();
-      setVisible(false);
-      setContent([]);
+      setModalVisible(false);
+      setModalContent([]);
       return receipt;
     } catch (e) {
       setError(e.message);
@@ -92,7 +87,7 @@ export const TxModal = ({ address }) => {
           width="20"
           height="20"
           className="opacity-50 hover:opacity-80 hover:cursor-pointer"
-          onClick={() => setVisible(false)}
+          onClick={() => setModalVisible(false)}
         />
       </div>
       {error && (

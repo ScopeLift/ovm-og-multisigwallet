@@ -1,15 +1,17 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useContext } from 'react';
 import useSWR from 'swr';
 import { fetcher } from 'utils/fetcher';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
-import { Wallet } from '@ethersproject/wallet';
 import { abi } from 'abi/MultiSigWallet.json';
 import { truncateAddress } from 'utils/truncate';
+import { ModalContext } from 'components/Modal';
+import { AddOwnerModal, ReplaceOwnerModal } from 'components/OwnerModal';
 
 export const Owners = ({ address }) => {
-  const { account, library } = useWeb3React<Web3Provider>();
+  const { library } = useWeb3React<Web3Provider>();
+  const { setModalContent, setModalVisible } = useContext(ModalContext);
   const {
     data: owners,
     mutate,
@@ -40,20 +42,14 @@ export const Owners = ({ address }) => {
     };
   }, [library]);
 
-  const addOwner = async (contract) => {
-    try {
-      const tx = await contract
-        .connect(library.getSigner())
-        .submitTransaction(
-          contract.address,
-          0,
-          contract.interface.encodeFunctionData('addOwner', [Wallet.createRandom().address])
-        );
-      const receipt = tx.wait();
-      return receipt;
-    } catch (e) {
-      console.log(e);
-    }
+  const addOwner = () => {
+    setModalContent(<AddOwnerModal address={address} />);
+    setModalVisible(true);
+  };
+
+  const replaceOwner = (ownerToBeReplaced) => {
+    setModalContent(<ReplaceOwnerModal address={address} ownerToBeReplaced={ownerToBeReplaced} />);
+    setModalVisible(true);
   };
 
   const removeOwner = async (owner: string) => {
@@ -68,21 +64,8 @@ export const Owners = ({ address }) => {
     return receipt;
   };
 
-  const replaceOwner = async (owner: string, newOwner: string) => {
-    const tx = await contract
-      .connect(library.getSigner())
-      .submitTransaction(
-        contract.address,
-        0,
-        contract.interface.encodeFunctionData('replaceOwner', [owner, newOwner])
-      );
-    const receipt = tx.wait();
-    return receipt;
-  };
-
   if (!owners) return <div>...</div>;
 
-  const newOwner = Wallet.createRandom().address;
   const cellStyle = 'border border-gray-500 p-2';
   return (
     <>
@@ -91,7 +74,7 @@ export const Owners = ({ address }) => {
         <div>
           <button
             className="bg-gradient-to-r from-green-400 to-blue-500 px-3 py-2 text-white text-sm font-semibold rounded"
-            onClick={() => addOwner(contract)}
+            onClick={addOwner}
           >
             Add new
           </button>
@@ -109,8 +92,10 @@ export const Owners = ({ address }) => {
             <tr key={owner}>
               <td className={cellStyle}>{truncateAddress(owner)}</td>
               <td className={cellStyle}>
-                <button className="p-2">Edit</button>
-                <button className="p-2" onClick={() => replaceOwner(owner, newOwner)}>
+                <button className="p-2" disabled>
+                  <s>Edit</s>
+                </button>
+                <button className="p-2" onClick={() => replaceOwner(owner)}>
                   Replace
                 </button>
                 <button className="p-2" onClick={() => removeOwner(owner)}>
