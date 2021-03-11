@@ -8,6 +8,7 @@ type ContextProps = {
   setModalVisible: Function;
   setModalContent: Function;
   clearModal: Function;
+  setModal;
 };
 
 export const ModalContext = createContext<Partial<ContextProps>>({
@@ -16,14 +17,21 @@ export const ModalContext = createContext<Partial<ContextProps>>({
   setModalVisible: () => {},
   setModalContent: () => {},
   clearModal: () => {},
+  setModal: () => {},
 });
 
 export const WithModal = ({ children }) => {
   const [visible, setModalVisible] = useState(false);
   const [content, setModalContent] = useState([]);
+  const [styleClass, setStyleClass] = useState('');
   const clearModal = () => {
     setModalVisible(false);
     setModalContent([]);
+  };
+  const setModal = ({ content, styleClass }) => {
+    setModalVisible(true);
+    setModalContent(content);
+    setStyleClass(styleClass);
   };
   return (
     <ModalContext.Provider
@@ -33,25 +41,23 @@ export const WithModal = ({ children }) => {
         setModalVisible,
         setModalContent,
         clearModal,
+        setModal,
       }}
     >
       <div className={!visible ? 'hidden' : ''}>
-        <Modal>{content}</Modal>
+        <Modal styleClass={styleClass}>{content}</Modal>
       </div>
       {children}
     </ModalContext.Provider>
   );
 };
 
-export const Modal = ({ children }) => {
+export const Modal = ({ children, styleClass = 'w-1/2' }) => {
   const wrapperRef = useRef(null);
   useOutsideAlerter(wrapperRef);
   return (
-    <div className="fixed inset-0 w-full h-full z-20 bg-black bg-opacity-50 duration-300 overflow-y-auto">
-      <div
-        ref={wrapperRef}
-        className="relative sm:w-3/4 md:w-1/2 lg:w-1/2 mx-2 sm:mx-auto my-10 opacity-100"
-      >
+    <div className="fixed flex justify-center items-center inset-0 w-full h-full z-20 bg-black bg-opacity-50 duration-300 overflow-y-auto">
+      <div ref={wrapperRef} className={'mx-2 sm:mx-auto my-10 opacity-100 ' + styleClass}>
         <div className="bg-white shadow-lg rounded-md text-gray-900 z-20">{children}</div>
       </div>
     </div>
