@@ -1,0 +1,17 @@
+diff --git a/node_modules/@web3-react/network-connector/dist/network-connector.esm.js b/node_modules/@web3-react/network-connector/dist/network-connector.esm.js
+index 3c224f3..f36b5c6 100644
+--- a/node_modules/@web3-react/network-connector/dist/network-connector.esm.js
++++ b/node_modules/@web3-react/network-connector/dist/network-connector.esm.js
+@@ -144,7 +144,11 @@ var MiniRpcProvider = function MiniRpcProvider(chainId, url) {
+           id: 1,
+           method: method,
+           params: params
+-        })
++        },
++        ),
++        headers: {
++          'Content-Type': 'application/json'
++        },
+       })).then(function (response) {
+         if (!response.ok) throw new RequestError(response.status + ": " + response.statusText, -32000);
+         return Promise.resolve(response.json()).then(function (body) {

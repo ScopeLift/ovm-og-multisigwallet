@@ -1,10 +1,6 @@
-import React from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Web3Provider } from '@ethersproject/providers';
-import { Web3ReactProvider, useWeb3React, UnsupportedChainIdError } from '@web3-react/core';
-import {
-  NoEthereumProviderError,
-  UserRejectedRequestError as UserRejectedRequestErrorInjected,
-} from '@web3-react/injected-connector';
+import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 
 import { ChainId } from 'components/ChainId';
 import { BlockNumber } from 'components/BlockNumber';
@@ -13,6 +9,8 @@ import { TransactionTable } from 'components/TransactionsTable';
 import { Connection } from 'components/Connection';
 import { NetworkName } from 'components/NetworkName';
 import { WithModal } from 'components/Modal';
+import { SetOrDeployMultisig } from 'components/SetOrDeployMultisig';
+import { WithToast, Toast } from 'components/Toast';
 
 // MULTISIG ADDR: 0x7b671dBae4e4Ad733Cd116aeAE378302cEAB7A06
 
@@ -20,19 +18,6 @@ function getLibrary(provider: any): Web3Provider {
   const library = new Web3Provider(provider);
   library.pollingInterval = 12000;
   return library;
-}
-
-function getErrorMessage(error: Error) {
-  if (error instanceof NoEthereumProviderError) {
-    return 'No Ethereum browser extension detected, install MetaMask on desktop or visit from a dApp browser on mobile.';
-  } else if (error instanceof UnsupportedChainIdError) {
-    return "You're connected to an unsupported network.";
-  } else if (error instanceof UserRejectedRequestErrorInjected) {
-    return 'Please authorize this website to access your Ethereum account.';
-  } else {
-    console.error(error);
-    return 'An unknown error occurred. Check the console for more details.';
-  }
 }
 
 const Page = () => {
@@ -47,29 +32,39 @@ const Page = () => {
 
 const App = () => {
   const { error } = useWeb3React<Web3Provider>();
-
-  const address = '0x7b671dBae4e4Ad733Cd116aeAE378302cEAB7A06';
+  const [multisigAddress, setMultisigAddress] = useState('');
 
   return (
     <>
       <WithModal>
-        <div className="container mx-auto px-4">
-          <div className="flex justify-end mt-2">
-            <ChainId />
-            <BlockNumber />
-            <NetworkName />
-            <Connection />
-          </div>
-          <div>
-            {!!error && (
+        <WithToast>
+          <div className="container mx-auto px-4">
+            <div className="flex justify-end mt-2">
+              <ChainId />
+              <BlockNumber />
+              <NetworkName />
+              <Connection />
+            </div>
+            <div className="mt-4">
+              <Toast />
+              {/* {!!error && (
               <h4 className="mt-5 border border-red-400 bg-red-100 text-red-400">
                 {getErrorMessage(error)}
               </h4>
+            )} */}
+            </div>
+            <SetOrDeployMultisig
+              address={multisigAddress}
+              setMultisigAddress={setMultisigAddress}
+            />
+            {multisigAddress && (
+              <>
+                <TransactionTable address={multisigAddress} />
+                <Owners address={multisigAddress} />
+              </>
             )}
           </div>
-          <TransactionTable address={address} />
-          <Owners address={address} />
-        </div>
+        </WithToast>
       </WithModal>
     </>
   );

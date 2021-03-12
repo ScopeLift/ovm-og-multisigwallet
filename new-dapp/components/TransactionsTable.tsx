@@ -36,7 +36,7 @@ export const TransactionTable = ({ address }) => {
     };
   }, [library]);
 
-  if (!transactionCount) return <div>...</div>;
+  if (!transactionCount) return <></>;
   // const status = transactionCount === undefiened ? "off" : transactionCount ===
   const parsedTxCount = parseInt(transactionCount.toString());
   const cellStyle = 'border border-gray-500 p-2';

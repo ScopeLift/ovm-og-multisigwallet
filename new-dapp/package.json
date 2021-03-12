@@ -6,6 +6,8 @@
   "devDependencies": {
     "eslint": "^7.21.0",
     "husky": "^5.1.3",
+    "patch-package": "^6.4.6",
+    "postinstall-postinstall": "^2.1.0",
     "prettier": "^2.2.1",
     "typescript": "^4.2.2",
     "vercel": "^21.3.3"
@@ -15,6 +17,7 @@
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
     "@web3-react/ledger-connector": "^6.1.9",
+    "@web3-react/network-connector": "^6.1.9",
     "@web3-react/trezor-connector": "^6.1.9",
     "autoprefixer": "^10.2.5",
     "dotenv": "^8.2.0",
@@ -31,8 +34,9 @@
     "build": "next build",
     "dev": "yarn copy-abi && next",
     "deploy": "yarn copy-abi && vercel",
-    "copy-abi": "cp ../build/contracts/ovm/MultiSigWallet.json ./abi/",
-    "clean-abi": "rm -rf ./abi/*"
+    "copy-abi": "cp ../build/contracts/ovm/MultiSigWalletFactory.json ../build/contracts/ovm/MultiSigWallet.json ./abi/",
+    "clean-abi": "rm -rf ./abi/*",
+    "postinstall": "patch-package"
   },
   "volta": {
     "node": "14.16.0",

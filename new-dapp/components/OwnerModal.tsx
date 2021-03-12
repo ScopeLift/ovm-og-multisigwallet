@@ -35,7 +35,7 @@ export const OwnerModal = ({
         0,
         contract.interface.encodeFunctionData('addOwner', [owner])
       );
-    const receipt = tx.wait();
+    const receipt = await tx.wait();
     return receipt;
   };
 
@@ -47,7 +47,7 @@ export const OwnerModal = ({
         0,
         contract.interface.encodeFunctionData('replaceOwner', [owner, newOwner])
       );
-    const receipt = tx.wait();
+    const receipt = await tx.wait();
     return receipt;
   };
 

@@ -60,11 +60,11 @@ export const Owners = ({ address }) => {
         0,
         contract.interface.encodeFunctionData('removeOwner', [owner])
       );
-    const receipt = tx.wait();
+    const receipt = await tx.wait();
     return receipt;
   };
 
-  if (!owners) return <div>...</div>;
+  if (!owners) return <></>;
 
   const cellStyle = 'border border-gray-500 p-2';
   return (

@@ -8,7 +8,7 @@ type ContextProps = {
   setModalVisible: Function;
   setModalContent: Function;
   clearModal: Function;
-  setModal;
+  setModal: Function;
 };
 
 export const ModalContext = createContext<Partial<ContextProps>>({

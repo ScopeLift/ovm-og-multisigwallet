@@ -6,12 +6,6 @@ import { fetcher } from 'utils/fetcher';
 
 export const BlockNumber = () => {
   const { account, library } = useWeb3React<Web3Provider>();
-  // const { data: blockNumber, mutate } = useSWR(
-  //   library ? ['getBlockNumber', account, 'latest'] : null,
-  //   {
-  //     fetcher: fetcher(library, null),
-  //   }
-  // );
   const [blockNumber, setBlockNumber] = useState<number>(0);
 
   useEffect(() => {
@@ -29,8 +23,8 @@ export const BlockNumber = () => {
     // trigger the effect only on component mount
   }, [library]);
 
-  if (!blockNumber) {
-    return <div>...</div>;
+  if (!blockNumber || !library) {
+    return <> </>;
   }
   return (
     <div className="py-1 px-2 rounded border border-gray-400 text-xs text-gray-400 mr-2">

@@ -66,7 +66,7 @@ export const TxModal = ({ address }) => {
             inputs ? inputs.map((input) => args[input.name]) : undefined
           )
         );
-      const receipt = tx.wait();
+      const receipt = await tx.wait();
       setModalVisible(false);
       setModalContent([]);
       return receipt;
@@ -115,14 +115,19 @@ export const TxModal = ({ address }) => {
               onChange={(e) => setMethod(e.target.value)}
             >
               <option value=""></option>
-              {methods.length && methods.map((method) => <option value={method}>{method}</option>)}
+              {methods.length &&
+                methods.map((method) => (
+                  <option key={method} value={method}>
+                    {method}
+                  </option>
+                ))}
             </select>
           </li>
           {!!params.length && (
             <>
               {params.map((param) => (
-                <li>
-                  <label>
+                <li key={param}>
+                  <label className={labelStyle}>
                     {param.name}: {param.type}
                   </label>
                   <input
