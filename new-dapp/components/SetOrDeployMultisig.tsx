@@ -2,8 +2,8 @@ import { useState, useContext } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
-import { Modal, ModalContext } from 'components/Modal';
-import { abi as factoryAbi, bytecode as factoryBytecode } from 'abi/MultiSigWalletFactory.json';
+import { ModalContext } from 'components/Modal';
+import { abi as factoryAbi } from 'abi/MultiSigWalletFactory.json';
 import { config } from 'multisig-config';
 
 export const SetOrDeployMultisig = ({

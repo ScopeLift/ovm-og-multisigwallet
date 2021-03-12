@@ -63,10 +63,16 @@ const ConnectionModal = ({ props }) => {
           const activating = currentConnector === activatingConnector;
           const connected = currentConnector === connector;
           const disabled = !triedEager || !!activatingConnector || connected || !!error;
+          if (name === 'Network') return <></>;
           return (
             <li key={name}>
               <button
-                className="flex justify-between border border-gray-300 rounded-md hover:bg-gray-100 hover:text-gray-900 w-full my-2 p-5"
+                className={[
+                  'flex justify-between border border-gray-300 rounded-md hover:bg-gray-100 hover:text-gray-900 w-full my-2 p-5',
+                  connected
+                    ? 'border-green-300 bg-green-100 hover:bg-red-100 hover:border-red-300'
+                    : '',
+                ].join(' ')}
                 onClick={
                   connected
                     ? deactivate
@@ -78,7 +84,7 @@ const ConnectionModal = ({ props }) => {
                     : () => {}
                 }
               >
-                {connected ? 'CONNNECTEDDD' : ''} {name}
+                {name}
               </button>
             </li>
           );
@@ -116,10 +122,13 @@ export const Connection = () => {
     }
   }, [activatingConnector, connector]);
 
-  // show modal if wallet disconnected
-  // useEffect(() => {
-  //   if (triedEager && !activatingConnector && !active) showConnectionModal();
-  // }, [triedEager, activatingConnector, active]);
+  // use network connector if wallet disconnected
+  useEffect(() => {
+    if (triedEager && !activatingConnector && !active) {
+      setActivatingConnector(connectorsByName['Network']);
+      activate(connectorsByName['Network']);
+    }
+  }, [triedEager, activatingConnector, active]);
 
   // clear modal after successful connection
   // useEffect(() => {

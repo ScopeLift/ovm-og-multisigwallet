@@ -11,6 +11,7 @@ import { NetworkName } from 'components/NetworkName';
 import { WithModal } from 'components/Modal';
 import { SetOrDeployMultisig } from 'components/SetOrDeployMultisig';
 import { WithToast, Toast } from 'components/Toast';
+import { MultisigInfo } from 'components/MultisigInfo';
 
 // MULTISIG ADDR: 0x7b671dBae4e4Ad733Cd116aeAE378302cEAB7A06
 
@@ -31,7 +32,7 @@ const Page = () => {
 };
 
 const App = () => {
-  const { error } = useWeb3React<Web3Provider>();
+  const { library } = useWeb3React<Web3Provider>();
   const [multisigAddress, setMultisigAddress] = useState('');
 
   return (
@@ -59,6 +60,7 @@ const App = () => {
             />
             {multisigAddress && (
               <>
+                <MultisigInfo address={multisigAddress} setMultisigAddress={setMultisigAddress} />
                 <TransactionTable address={multisigAddress} />
                 <Owners address={multisigAddress} />
               </>

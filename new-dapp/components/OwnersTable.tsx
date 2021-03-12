@@ -92,9 +92,9 @@ export const Owners = ({ address }) => {
             <tr key={owner}>
               <td className={cellStyle}>{truncateAddress(owner)}</td>
               <td className={cellStyle}>
-                <button className="p-2" disabled>
+                {/* <button className="p-2" disabled>
                   <s>Edit</s>
-                </button>
+                </button> */}
                 <button className="p-2" onClick={() => replaceOwner(owner)}>
                   Replace
                 </button>
