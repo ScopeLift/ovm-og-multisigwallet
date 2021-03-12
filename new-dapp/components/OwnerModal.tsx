@@ -66,7 +66,7 @@ export const OwnerModal = ({
   };
 
   const itemStyle = 'flex justify-between p-4 items-center';
-  const inputStyle = 'border border-gray-500 w-80';
+  const inputStyle = 'border border-gray-500 w-80 font-mono';
   const labelStyle = '';
   return (
     <Modal>
@@ -83,7 +83,7 @@ export const OwnerModal = ({
       {error && (
         <div className="bg-red-100 border border-red-500 text-red-500 p-3 m-5">{error}</div>
       )}
-      <form>
+      <form className="pb-5">
         <ul>
           <li className={itemStyle}>
             <label className={labelStyle}>New owner address</label>

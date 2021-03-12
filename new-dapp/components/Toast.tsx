@@ -7,6 +7,7 @@ type ContextProps = {
   timeout: number;
   type: 'success' | 'error';
   setToast: Function;
+  clearToast: Function;
 };
 
 export const ToastContext = createContext<Partial<ContextProps>>({
@@ -25,7 +26,6 @@ export const WithToast = ({ children }) => {
   const [type, setType] = useState<'success' | 'error'>('error');
 
   useEffect(() => {
-    console.log('ok yeah timeouts and stuff');
     const timer = setTimeout(() => setVisible(false), timeout);
     return () => clearTimeout(timer);
   }, [content, timeout, type]);
@@ -69,7 +69,7 @@ export const Toast = () => {
   const { content, type, visible } = useContext(ToastContext);
   console.log(visible);
   const styleClass = [
-    'w-full p-5 transition',
+    'w-full p-5 mb-3 transition',
     type === 'success'
       ? 'bg-green-100 text-green-800 border border-green-800'
       : 'bg-red-100 text-red-800 border border-red-800',

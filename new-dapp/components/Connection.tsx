@@ -63,7 +63,7 @@ const ConnectionModal = ({ props }) => {
           const activating = currentConnector === activatingConnector;
           const connected = currentConnector === connector;
           const disabled = !triedEager || !!activatingConnector || connected || !!error;
-          if (name === 'Network') return <></>;
+          if (name === 'Network') return;
           return (
             <li key={name}>
               <button

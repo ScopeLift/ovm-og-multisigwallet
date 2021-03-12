@@ -7,11 +7,13 @@ import { Contract } from '@ethersproject/contracts';
 import { abi } from 'abi/MultiSigWallet.json';
 import { truncateAddress } from 'utils/truncate';
 import { ModalContext } from 'components/Modal';
+import { ToastContext } from 'components/Toast';
 import { AddOwnerModal, ReplaceOwnerModal } from 'components/OwnerModal';
 
 export const Owners = ({ address }) => {
-  const { library } = useWeb3React<Web3Provider>();
+  const { library, account } = useWeb3React<Web3Provider>();
   const { setModalContent, setModalVisible } = useContext(ModalContext);
+  const { setToast } = useContext(ToastContext);
   const {
     data: owners,
     mutate,
@@ -27,7 +29,6 @@ export const Owners = ({ address }) => {
     if (!library) return;
     const addition = contract.filters.OwnerAddition(null);
     const removal = contract.filters.OwnerRemoval(null);
-    console.log('owners: ', owners);
     library.on(addition, (event) => {
       console.log('Owner addition', { event });
       mutate(undefined, true);
@@ -43,16 +44,34 @@ export const Owners = ({ address }) => {
   }, [library]);
 
   const addOwner = () => {
+    if (!account)
+      return setToast({
+        type: 'error',
+        content: 'Please connect your wallet before you manage owners.',
+        timeout: 5000,
+      });
     setModalContent(<AddOwnerModal address={address} />);
     setModalVisible(true);
   };
 
   const replaceOwner = (ownerToBeReplaced) => {
+    if (!account)
+      return setToast({
+        type: 'error',
+        content: 'Please connect your wallet before you manage owners.',
+        timeout: 5000,
+      });
     setModalContent(<ReplaceOwnerModal address={address} ownerToBeReplaced={ownerToBeReplaced} />);
     setModalVisible(true);
   };
 
   const removeOwner = async (owner: string) => {
+    if (!account)
+      return setToast({
+        type: 'error',
+        content: 'Please connect your wallet before you manage owners.',
+        timeout: 5000,
+      });
     const tx = await contract
       .connect(library.getSigner())
       .submitTransaction(
@@ -90,15 +109,12 @@ export const Owners = ({ address }) => {
         <tbody>
           {owners.map((owner) => (
             <tr key={owner}>
-              <td className={cellStyle}>{truncateAddress(owner)}</td>
+              <td className={cellStyle}>{owner}</td>
               <td className={cellStyle}>
-                {/* <button className="p-2" disabled>
-                  <s>Edit</s>
-                </button> */}
-                <button className="p-2" onClick={() => replaceOwner(owner)}>
+                <button className="p-2 font-sans" onClick={() => replaceOwner(owner)}>
                   Replace
                 </button>
-                <button className="p-2" onClick={() => removeOwner(owner)}>
+                <button className="p-2 font-sans" onClick={() => removeOwner(owner)}>
                   Remove
                 </button>
               </td>

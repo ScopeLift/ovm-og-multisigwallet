@@ -48,7 +48,6 @@ export const TOKENS_BY_NETWORK: {
 };
 
 export const fetcher = (library: Web3Provider, abi?: any) => (...args) => {
-  console.log(library);
   if (!library) throw new Error('no library');
   const [arg1, arg2, ...params] = args;
   // it's a contract
@@ -61,5 +60,6 @@ export const fetcher = (library: Web3Provider, abi?: any) => (...args) => {
   }
   // it's a eth call
   const method = arg1;
+  console.log(method);
   return library[method](arg2, ...params);
 };

@@ -8,16 +8,12 @@ import { abi } from 'abi/MultiSigWallet.json';
 import { TransactionRow } from 'components/TransactionRow';
 import { TxModal } from 'components/TxModal';
 import { ModalContext } from 'components/Modal';
+import { ToastContext } from 'components/Toast';
 
-/**
- * Transaction table has 3 states:
- *  - connected properly and displaying rows
- *  - connected to a network but no signer
- *  - not connected to a network
- */
 export const TransactionTable = ({ address }) => {
-  const { library } = useWeb3React<Web3Provider>();
+  const { library, account } = useWeb3React<Web3Provider>();
   const { setModalContent, setModalVisible } = useContext(ModalContext);
+  const { setToast } = useContext(ToastContext);
   let { data: transactionCount, mutate } = useSWR(library ? [address, 'transactionCount'] : null, {
     fetcher: fetcher(library, abi),
   });
@@ -36,22 +32,28 @@ export const TransactionTable = ({ address }) => {
     };
   }, [library]);
 
+  const addNewTx = () => {
+    if (!account)
+      return setToast({
+        type: 'error',
+        content: 'Please connect your wallet before you add a transaction.',
+        timeout: 5000,
+      });
+    setModalContent(<TxModal address={address} />);
+    setModalVisible(true);
+  };
+
   if (!transactionCount) return <></>;
-  // const status = transactionCount === undefiened ? "off" : transactionCount ===
   const parsedTxCount = parseInt(transactionCount.toString());
   const cellStyle = 'border border-gray-500 p-2';
   return (
-    <>
+    <div className="my-10">
       <div className="flex items-center my-5">
         <h2 className="block text-xl mr-2">Transactions</h2>
         <div>
           <button
             className="bg-gradient-to-r from-green-400 to-blue-500 px-3 py-2 text-white text-sm font-semibold rounded"
-            onClick={() => {
-              setModalContent(<TxModal address={address} />);
-              setModalVisible(true);
-            }}
-            // disabled={disabled}
+            onClick={addNewTx}
           >
             Add new
           </button>
@@ -76,6 +78,6 @@ export const TransactionTable = ({ address }) => {
             ))}
         </tbody>
       </table>
-    </>
+    </div>
   );
 };

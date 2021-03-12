@@ -37,13 +37,15 @@ export const MultisigInfo = ({ address, setMultisigAddress }) => {
     e.preventDefault();
     setMultisigAddress('');
   };
-  const nConfirms = parseInt(nConfirmations.toString());
+
+  const nConfirms = parseInt(nConfirmations?.toString() || '0');
+
   return (
     <div className="bg-gradient-to-r from-purple-100 via-yellow-300 to-red-100 rounded-lg p-6">
       <h2 className="text-xl">
-        Multisig {address} -{' '}
+        Multisig {address}
         <button
-          className="text-sm rounded border px-2  border-gray-400 bg-gray-100 text-gray-400"
+          className="ml-2 text-sm rounded border px-2 border-gray-400 bg-gray-100 text-gray-800"
           onClick={clearMultisigAddress}
         >
           Switch
