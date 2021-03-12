@@ -48,11 +48,6 @@ const App = () => {
             </div>
             <div className="mt-4">
               <Toast />
-              {/* {!!error && (
-              <h4 className="mt-5 border border-red-400 bg-red-100 text-red-400">
-                {getErrorMessage(error)}
-              </h4>
-            )} */}
             </div>
             <SetOrDeployMultisig
               address={multisigAddress}

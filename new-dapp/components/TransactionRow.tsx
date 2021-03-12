@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import useSWR from 'swr';
 import { fetcher } from 'utils/fetcher';
 import { useWeb3React } from '@web3-react/core';
@@ -6,27 +6,33 @@ import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { abi } from 'abi/MultiSigWallet.json';
 import { truncateAddress } from 'utils/truncate';
+import { ToastContext } from 'components/Toast';
 
 export const TransactionRow = ({ address, transactionId, cellStyle }) => {
   const { account, library } = useWeb3React<Web3Provider>();
-
+  const { setToast } = useContext(ToastContext);
   const { data: transaction, mutate } = useSWR(
     library ? [address, 'transactions', transactionId] : null,
     {
       fetcher: fetcher(library, abi),
     }
   );
-
   const { data: confirmations, mutate: mutateConfirmations } = useSWR(
     library ? [address, 'getConfirmations', transactionId] : null,
     {
       fetcher: fetcher(library, abi),
     }
   );
+  const { data: isConfirmed, mutate: mutateIsConfirmed } = useSWR(
+    library ? [address, 'isConfirmed', transactionId] : null,
+    {
+      fetcher: fetcher(library, abi),
+    }
+  );
+  const contract = new Contract(address, abi);
 
   useEffect(() => {
     if (!library) return;
-    const contract = new Contract(address, abi);
     const confirmation = contract.filters.Confirmation(null, transactionId);
     const revocation = contract.filters.Revocation(null, transactionId);
     const execution = contract.filters.Execution(transactionId);
@@ -36,6 +42,7 @@ export const TransactionRow = ({ address, transactionId, cellStyle }) => {
       console.log('confirmation', { event });
       mutate(undefined, true);
       mutateConfirmations(undefined, true);
+      mutateIsConfirmed(undefined, true);
     });
     library.on(revocation, (event) => {
       console.log('revocation', { event });
@@ -58,7 +65,45 @@ export const TransactionRow = ({ address, transactionId, cellStyle }) => {
     };
   }, [library]);
 
+  const confirmTx = async () => {
+    if (!account)
+      return setToast({
+        type: 'error',
+        content: 'Please connect your wallet before you confirm a transaction.',
+        timeout: 5000,
+      });
+    try {
+      const tx = await contract.connect(library.getSigner()).confirmTransaction(transactionId);
+      await tx.wait();
+    } catch (e) {
+      setToast({
+        type: 'error',
+        content: e.message,
+        timeout: 5000,
+      });
+    }
+  };
+
+  const revokeConfirmation = async () => {
+    if (!account)
+      return setToast({
+        type: 'error',
+        content: 'Please connect your wallet before you revoke a confirmation.',
+        timeout: 5000,
+      });
+    try {
+      const tx = await contract.connect(library.getSigner()).revokeConfirmation(transactionId);
+      await tx.wait();
+    } catch (e) {
+      setToast({
+        type: 'error',
+        content: e.message,
+        timeout: 5000,
+      });
+    }
+  };
   if (!transaction) return <tr></tr>;
+  const txStatus = transaction.executed ? 'executed' : isConfirmed ? 'failed' : 'pending';
   return (
     <tr>
       <td className={cellStyle}>{transactionId}</td>
@@ -69,16 +114,31 @@ export const TransactionRow = ({ address, transactionId, cellStyle }) => {
         <span className="truncate block w-44">{transaction.data}</span>
       </td>
       <td className={cellStyle}>
-        <div className="flex flex-row items-center">
-          <div className="bg-pink-100 rounded p-3 mr-2">
-            {confirmations && confirmations.length}
+        <div className="flex flex-row justify-between">
+          <div className="flex flex-row items-center">
+            <div className="bg-pink-100 rounded p-3 mr-2">
+              {confirmations && confirmations.length}
+            </div>
+            <ul>
+              {confirmations && confirmations.map((address) => <li key={address}>{address}</li>)}
+            </ul>
           </div>
-          <ul>
-            {confirmations && confirmations.map((address) => <li key={address}>{address}</li>)}
-          </ul>
+          {txStatus === 'pending' &&
+            (!confirmations.includes(account) ? (
+              <button className="text-sm border border-gray-400 rounded px-2" onClick={confirmTx}>
+                Confirm
+              </button>
+            ) : (
+              <button
+                className="text-sm border border-gray-400 rounded px-2"
+                onClick={revokeConfirmation}
+              >
+                Revoke
+              </button>
+            ))}
         </div>
       </td>
-      <td className={cellStyle}>{transaction.executed.toString()}</td>
+      <td className={cellStyle}>{txStatus}</td>
     </tr>
   );
 };

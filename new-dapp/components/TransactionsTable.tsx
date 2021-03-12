@@ -17,10 +17,11 @@ export const TransactionTable = ({ address }) => {
   let { data: transactionCount, mutate } = useSWR(library ? [address, 'transactionCount'] : null, {
     fetcher: fetcher(library, abi),
   });
+  const contract = new Contract(address, abi);
 
   useEffect(() => {
     if (!library) return;
-    const contract = new Contract(address, abi);
+
     const submission = contract.filters.Submission(null);
 
     library.on(submission, (event) => {
@@ -66,7 +67,7 @@ export const TransactionTable = ({ address }) => {
             <th className={cellStyle}>Destination</th>
             <th className={cellStyle}>Data</th>
             <th className={cellStyle}>Confirmations</th>
-            <th className={cellStyle}>Executed?</th>
+            <th className={cellStyle}>Status</th>
           </tr>
         </thead>
         <tbody>
