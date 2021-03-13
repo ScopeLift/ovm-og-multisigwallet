@@ -110,7 +110,7 @@ export const SetOrDeployMultisig = ({
               </li>
               <li className="m-2 p-2 w-5/6 mx-auto">
                 <label className="text-sm text-gray-500 p-1">
-                  # Confirmations required per transaction:
+                  # signatures required per transaction:
                 </label>
                 <input
                   className="block p-1 m-2"

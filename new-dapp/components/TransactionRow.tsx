@@ -126,7 +126,7 @@ export const TransactionRow = ({ address, transactionId, cellStyle }) => {
           {txStatus === 'pending' &&
             (!confirmations.includes(account) ? (
               <button className="text-sm border border-gray-400 rounded px-2" onClick={confirmTx}>
-                Confirm
+                Sign
               </button>
             ) : (
               <button

@@ -61,8 +61,7 @@ export const MultisigInfo = ({ address, setMultisigAddress }) => {
         </button>
       </h2>
       <div className="">
-        {nConfirms} {nConfirms > 1 ? 'confirmations' : 'confirmation'} needed to execute a
-        transaction{' '}
+        {nConfirms} {nConfirms > 1 ? 'signatures' : 'signature'} needed to execute a transaction{' '}
         <button
           className="text-sm rounded border px-2  border-gray-400 bg-gray-100 text-gray-800"
           onClick={showRequirementModal}

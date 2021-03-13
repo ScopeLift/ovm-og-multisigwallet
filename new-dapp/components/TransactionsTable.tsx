@@ -69,7 +69,7 @@ export const TransactionTable = ({ address }) => {
             <th className={cellStyle}>ID</th>
             <th className={cellStyle}>Destination</th>
             <th className={cellStyle}>Data</th>
-            <th className={cellStyle}>Confirmations</th>
+            <th className={cellStyle}>Owner Signatures</th>
             <th className={cellStyle}>Status</th>
           </tr>
         </thead>

@@ -42,7 +42,7 @@ export const ConfirmsModal = ({ address, n }: { address: string; n: number }) =>
   return (
     <Modal>
       <div className="flex justify-between w-full bg-gray-200 p-3 font-semibold">
-        <h2>Change Confirmation Requirement</h2>
+        <h2>Change Signature Requirement</h2>
         <Image
           src="/x.svg"
           width="20"
@@ -57,7 +57,7 @@ export const ConfirmsModal = ({ address, n }: { address: string; n: number }) =>
       <form className="pb-5">
         <ul>
           <li className={itemStyle}>
-            <label className={labelStyle}># confirms required</label>
+            <label className={labelStyle}># signatures required</label>
             <input
               type="number"
               className={inputStyle}
