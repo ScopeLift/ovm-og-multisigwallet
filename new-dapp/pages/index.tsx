@@ -1,6 +1,6 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState } from 'react';
 import { Web3Provider } from '@ethersproject/providers';
-import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
+import { Web3ReactProvider } from '@web3-react/core';
 
 import { ChainId } from 'components/ChainId';
 import { BlockNumber } from 'components/BlockNumber';
@@ -12,8 +12,6 @@ import { WithModal } from 'components/Modal';
 import { SetOrDeployMultisig } from 'components/SetOrDeployMultisig';
 import { WithToast, Toast } from 'components/Toast';
 import { MultisigInfo } from 'components/MultisigInfo';
-
-// MULTISIG ADDR: 0x7b671dBae4e4Ad733Cd116aeAE378302cEAB7A06
 
 function getLibrary(provider: any): Web3Provider {
   const library = new Web3Provider(provider);
@@ -32,7 +30,6 @@ const Page = () => {
 };
 
 const App = () => {
-  const { library } = useWeb3React<Web3Provider>();
   const [multisigAddress, setMultisigAddress] = useState('');
 
   return (

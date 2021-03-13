@@ -6,15 +6,16 @@ import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { abi } from 'abi/MultiSigWallet.json';
 import { ModalContext } from 'components/Modal';
+import { ConfirmsModal } from 'components/ConfirmsModal';
 
 export const MultisigInfo = ({ address, setMultisigAddress }) => {
   const { library } = useWeb3React<Web3Provider>();
-  const { setModalContent, setModalVisible } = useContext(ModalContext);
+  const { setModal } = useContext(ModalContext);
   const {
     data: nConfirmations,
     mutate,
   }: {
-    data?: string[];
+    data?: string;
     mutate: Function;
   } = useSWR(library ? [address, 'required'] : null, {
     fetcher: fetcher(library, abi),
@@ -38,7 +39,15 @@ export const MultisigInfo = ({ address, setMultisigAddress }) => {
     setMultisigAddress('');
   };
 
-  const nConfirms = parseInt(nConfirmations?.toString() || '0');
+  const showRequirementModal = (e) => {
+    e.preventDefault();
+    setModal({
+      content: <ConfirmsModal address={address} n={parseInt(nConfirmations)} />,
+      styleClass: 'sm:w-full',
+    });
+  };
+
+  const nConfirms = parseInt(nConfirmations || '0');
 
   return (
     <div className="bg-gradient-to-r from-purple-100 via-yellow-300 to-red-100 rounded-lg p-6">
@@ -55,10 +64,10 @@ export const MultisigInfo = ({ address, setMultisigAddress }) => {
         {nConfirms} {nConfirms > 1 ? 'confirmations' : 'confirmation'} needed to execute a
         transaction{' '}
         <button
-          className="text-sm rounded border px-2  border-gray-400 bg-gray-100 text-gray-400"
-          disabled
+          className="text-sm rounded border px-2  border-gray-400 bg-gray-100 text-gray-800"
+          onClick={showRequirementModal}
         >
-          Edit (soon)
+          Change requirement
         </button>
       </div>
     </div>

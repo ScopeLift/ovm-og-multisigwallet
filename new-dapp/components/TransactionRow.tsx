@@ -102,7 +102,7 @@ export const TransactionRow = ({ address, transactionId, cellStyle }) => {
       });
     }
   };
-  if (!transaction) return <tr></tr>;
+  if (!transaction || !confirmations) return <tr></tr>;
   const txStatus = transaction.executed ? 'executed' : isConfirmed ? 'failed' : 'pending';
   return (
     <tr>
@@ -116,11 +116,11 @@ export const TransactionRow = ({ address, transactionId, cellStyle }) => {
       <td className={cellStyle}>
         <div className="flex flex-row justify-between">
           <div className="flex flex-row items-center">
-            <div className="bg-pink-100 rounded p-3 mr-2">
-              {confirmations && confirmations.length}
-            </div>
+            <div className="bg-pink-100 rounded p-3 mr-2">{confirmations.length}</div>
             <ul>
-              {confirmations && confirmations.map((address) => <li key={address}>{address}</li>)}
+              {confirmations.map((address) => (
+                <li key={address}>{address}</li>
+              ))}
             </ul>
           </div>
           {txStatus === 'pending' &&
@@ -138,7 +138,16 @@ export const TransactionRow = ({ address, transactionId, cellStyle }) => {
             ))}
         </div>
       </td>
-      <td className={cellStyle}>{txStatus}</td>
+      <td className={cellStyle}>
+        {txStatus === 'executed' ? (
+          <span className="text-green-400 mr-1">✔</span>
+        ) : txStatus === 'failed' ? (
+          <span className="text-red-400 mr-1">✕</span>
+        ) : (
+          ''
+        )}
+        <span className="">{txStatus}</span>
+      </td>
     </tr>
   );
 };

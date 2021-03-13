@@ -76,8 +76,8 @@ export const TxModal = ({ address }) => {
   };
 
   const itemStyle = 'flex justify-between p-4 items-center';
-  const inputStyle = 'border border-gray-500 w-80 font-mono';
-  const labelStyle = '';
+  const inputStyle = 'border border-gray-500 w-4/5 font-mono';
+  const labelStyle = 'w-1/5';
   return (
     <Modal>
       <div className="flex justify-between w-full bg-gray-200 p-3 font-semibold">

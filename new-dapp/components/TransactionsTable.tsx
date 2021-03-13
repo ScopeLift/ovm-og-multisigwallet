@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import useSWR from 'swr';
 import { fetcher } from 'utils/fetcher';
 import { useWeb3React } from '@web3-react/core';
@@ -14,6 +14,8 @@ export const TransactionTable = ({ address }) => {
   const { library, account } = useWeb3React<Web3Provider>();
   const { setModalContent, setModalVisible } = useContext(ModalContext);
   const { setToast } = useContext(ToastContext);
+  const [paginationIndex, setPaginationIndex] = useState(0);
+
   let { data: transactionCount, mutate } = useSWR(library ? [address, 'transactionCount'] : null, {
     fetcher: fetcher(library, abi),
   });
@@ -43,9 +45,10 @@ export const TransactionTable = ({ address }) => {
     setModalContent(<TxModal address={address} />);
     setModalVisible(true);
   };
-
   if (!transactionCount) return <></>;
   const parsedTxCount = parseInt(transactionCount.toString());
+  const txPerPage = 5;
+  const pageCount = Math.ceil(parsedTxCount / txPerPage);
   const cellStyle = 'border border-gray-500 p-2';
   return (
     <div className="my-10">
@@ -56,7 +59,7 @@ export const TransactionTable = ({ address }) => {
             className="bg-gradient-to-r from-green-400 to-blue-500 px-3 py-2 text-white text-sm font-semibold rounded"
             onClick={addNewTx}
           >
-            Add new
+            Add new transaction
           </button>
         </div>
       </div>
@@ -73,12 +76,31 @@ export const TransactionTable = ({ address }) => {
         <tbody>
           {[...Array(parsedTxCount).keys()]
             .reverse()
-            .slice(0, 5)
+            .slice(paginationIndex * txPerPage, paginationIndex * txPerPage + txPerPage)
             .map((id) => (
               <TransactionRow key={id} address={address} transactionId={id} cellStyle={cellStyle} />
             ))}
         </tbody>
       </table>
+      <div className="mt-2 text-right">
+        {paginationIndex > 0 && (
+          <button
+            className="mr-3 text-sm border border-gray-300 px-2"
+            onClick={() => setPaginationIndex(paginationIndex - 1)}
+          >
+            Prev{' '}
+          </button>
+        )}
+        Page {paginationIndex + 1} of {pageCount}
+        {paginationIndex !== pageCount - 1 && (
+          <button
+            className="ml-3 text-sm border border-gray-300 px-2"
+            onClick={() => setPaginationIndex(paginationIndex + 1)}
+          >
+            Next
+          </button>
+        )}
+      </div>
     </div>
   );
 };

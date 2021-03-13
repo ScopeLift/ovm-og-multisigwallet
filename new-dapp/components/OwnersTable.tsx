@@ -95,7 +95,7 @@ export const Owners = ({ address }) => {
             className="bg-gradient-to-r from-green-400 to-blue-500 px-3 py-2 text-white text-sm font-semibold rounded"
             onClick={addOwner}
           >
-            Add new
+            Add new owner
           </button>
         </div>
       </div>
@@ -111,10 +111,16 @@ export const Owners = ({ address }) => {
             <tr key={owner}>
               <td className={cellStyle}>{owner}</td>
               <td className={cellStyle}>
-                <button className="p-2 font-sans" onClick={() => replaceOwner(owner)}>
+                <button
+                  className="px-2 mr-2 font-sans rounded border border-gray-300 text-sm"
+                  onClick={() => replaceOwner(owner)}
+                >
                   Replace
                 </button>
-                <button className="p-2 font-sans" onClick={() => removeOwner(owner)}>
+                <button
+                  className="px-2 font-sans rounded border border-gray-300 text-sm"
+                  onClick={() => removeOwner(owner)}
+                >
                   Remove
                 </button>
               </td>
