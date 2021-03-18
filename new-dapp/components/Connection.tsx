@@ -3,6 +3,7 @@ import { Web3Provider } from '@ethersproject/providers';
 import { Web3ReactProvider, useWeb3React, UnsupportedChainIdError } from '@web3-react/core';
 import { useEagerConnect, useInactiveListener } from 'hooks/react-web3';
 import { network, injected, ledger, trezor } from 'utils/connectors';
+import { config } from '../config';
 import Image from 'next/image';
 import { truncateAddress } from 'utils/truncate';
 import { ModalContext } from 'components/Modal';
@@ -40,10 +41,40 @@ function getErrorMessage(error: Error) {
   }
 }
 
+const changeNetwork = async (library, account, chainId) => {
+  const toHex = (num) => {
+    return '0x' + parseInt(num).toString(16);
+  };
+  const network = config.networks[chainId];
+  const params = {
+    chainId: toHex(chainId), // A 0x-prefixed hexadecimal string
+    chainName: network.name,
+    rpcUrls: [network.rpcUrl],
+    blockExplorerUrls: network.blockExplorerUrls,
+    nativeCurrency: network.nativeCurrency,
+  };
+  library
+    .jsonRpcFetchFunc('wallet_addEthereumChain', [params, account])
+    .then((data) => {
+      console.log(params);
+      console.log('success ', data);
+    })
+    .catch(console.log);
+};
+
 const ConnectionModal = ({ props }) => {
   const { clearModal } = useContext(ModalContext);
-  const { connector, activate, deactivate, error } = useWeb3React<Web3Provider>();
+  const {
+    library,
+    connector,
+    chainId,
+    account,
+    activate,
+    deactivate,
+    error,
+  } = useWeb3React<Web3Provider>();
   const { activatingConnector, setActivatingConnector, triedEager } = props;
+
   return (
     <div className="pb-2">
       <div className="flex justify-between w-full bg-gray-200 p-3 font-semibold">
@@ -56,6 +87,21 @@ const ConnectionModal = ({ props }) => {
           className="opacity-50 hover:opacity-80 hover:cursor-pointer"
           onClick={() => clearModal()}
         />
+      </div>
+      Choose network:
+      <div className="flex flex-col">
+        {Object.entries(config.networks).map(([networkId, network]) => (
+          <button
+            className={[
+              'p-2 mx-auto border border-gray-300 rounded text-sm w-auto',
+              Number(networkId) === chainId ? 'border-green-300 bg-green-100' : '',
+            ].join(' ')}
+            key={networkId}
+            onClick={() => changeNetwork(library, account, networkId)}
+          >
+            {network.name}
+          </button>
+        ))}
       </div>
       <ul className="mx-2">
         {Object.keys(connectorsByName).map((name) => {
@@ -110,6 +156,11 @@ export const Connection = () => {
 
   useEffect(() => {
     if (error) setToast({ type: 'error', content: getErrorMessage(error), timeout: 5000 });
+    if (error instanceof UnsupportedChainIdError) {
+      changeNetwork(library, account, config.defaultNetwork)
+        .then(console.log)
+        .catch((e) => console.log(e));
+    }
   }, [error]);
 
   // handle logic to eagerly connect to the injected ethereum provider, if it exists and has granted access already

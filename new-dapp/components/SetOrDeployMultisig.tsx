@@ -4,7 +4,7 @@ import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { ModalContext } from 'components/Modal';
 import { abi as factoryAbi } from 'abi/MultiSigWalletFactory.json';
-import { config } from 'multisig-config';
+import { config } from 'config';
 
 export const SetOrDeployMultisig = ({
   address,
