@@ -41,7 +41,7 @@ function getErrorMessage(error: Error) {
   }
 }
 
-const changeNetwork = async (library, account, chainId) => {
+const changeNetworkOnInjectedProvider = async (library, account, chainId) => {
   const toHex = (num) => {
     return '0x' + parseInt(num).toString(16);
   };
@@ -53,6 +53,7 @@ const changeNetwork = async (library, account, chainId) => {
     blockExplorerUrls: network.blockExplorerUrls,
     nativeCurrency: network.nativeCurrency,
   };
+
   library
     .jsonRpcFetchFunc('wallet_addEthereumChain', [params, account])
     .then((data) => {
@@ -90,20 +91,44 @@ const ConnectionModal = ({ props }) => {
       </div>
       Choose network:
       <div className="flex flex-col">
-        {Object.entries(config.networks).map(([networkId, network]) => (
-          <button
-            className={[
-              'p-2 mx-auto border border-gray-300 rounded text-sm w-auto',
-              Number(networkId) === chainId ? 'border-green-300 bg-green-100' : '',
-            ].join(' ')}
-            key={networkId}
-            onClick={() => changeNetwork(library, account, networkId)}
-          >
-            {network.name}
-          </button>
-        ))}
+        {Object.keys(connectorsByName).map((connectorName) => {
+          const currentConnector = connectorsByName[connectorName];
+          const activating = currentConnector === activatingConnector;
+          const connected = currentConnector === connector;
+          const disabled = !triedEager || !!activatingConnector || connected || !!error;
+          if (connectorName === 'Network') return;
+          return (
+            <div className="flex" key={connectorName}>
+              <div>{connectorName}</div>
+              <div>
+                {Object.entries(config.networks).map(([networkId, network]) => (
+                  <button
+                    className={[
+                      'my-1 px-2 mx-auto border border-gray-300 rounded text-sm w-auto',
+                      Number(networkId) === chainId && connected
+                        ? 'border-green-300 bg-green-100'
+                        : '',
+                    ].join(' ')}
+                    key={networkId}
+                    onClick={async () => {
+                      if (connected && chainId === +networkId) return deactivate();
+                      if (!activating) {
+                        setActivatingConnector(currentConnector);
+                        await activate(connectorsByName[connectorName]);
+                      }
+                      if (connectorName === 'Injected')
+                        return changeNetworkOnInjectedProvider(library, account, networkId);
+                    }}
+                  >
+                    {network.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
-      <ul className="mx-2">
+      {/* <ul className="mx-2">
         {Object.keys(connectorsByName).map((name) => {
           const currentConnector = connectorsByName[name];
           const activating = currentConnector === activatingConnector;
@@ -136,6 +161,7 @@ const ConnectionModal = ({ props }) => {
           );
         })}
       </ul>
+    </div> */}
     </div>
   );
 };
@@ -153,18 +179,19 @@ export const Connection = () => {
   } = useWeb3React<Web3Provider>();
   const { setModal, clearModal } = useContext(ModalContext);
   const { setToast } = useContext(ToastContext);
-
+  console.log(active);
   useEffect(() => {
     if (error) setToast({ type: 'error', content: getErrorMessage(error), timeout: 5000 });
-    if (error instanceof UnsupportedChainIdError) {
-      changeNetwork(library, account, config.defaultNetwork)
-        .then(console.log)
-        .catch((e) => console.log(e));
-    }
+    // if (error instanceof UnsupportedChainIdError) {
+    //   changeNetworkOnInjectedProvider(library, account, config.defaultNetwork)
+    //     .then(console.log)
+    //     .catch((e) => setToast({ type: 'error', content: e.message, timeout: 5000 }));
+    // }
   }, [error]);
 
   // handle logic to eagerly connect to the injected ethereum provider, if it exists and has granted access already
   const triedEager = useEagerConnect();
+
   // handle logic to recognize the connector currently being activated
   const [activatingConnector, setActivatingConnector] = useState<any>();
   useEffect(() => {
@@ -176,8 +203,8 @@ export const Connection = () => {
   // use network connector if wallet disconnected
   useEffect(() => {
     if (triedEager && !activatingConnector && !active) {
-      setActivatingConnector(connectorsByName['Network']);
-      activate(connectorsByName['Network']);
+      // setActivatingConnector(connectorsByName['Network']);
+      // activate(connectorsByName['Network']);
     }
   }, [triedEager, activatingConnector, active]);
 
