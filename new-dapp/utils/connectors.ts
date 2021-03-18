@@ -18,16 +18,28 @@ export const injected = new InjectedConnector({
   supportedChainIds: Object.keys(RPC_URLS).map(Number),
 });
 
-export const ledger = new LedgerConnector({
-  chainId: 69,
-  url: RPC_URLS[69],
-  pollingInterval: POLLING_INTERVAL,
-});
+export const ledger = Object.keys(config.networks).reduce((prev, chainId) => {
+  console.log(prev);
+  return {
+    ...prev,
+    [chainId]: new LedgerConnector({
+      chainId: +chainId,
+      url: RPC_URLS[chainId],
+      pollingInterval: POLLING_INTERVAL,
+    }),
+  };
+}, {});
 
-export const trezor = new TrezorConnector({
-  chainId: 69,
-  url: RPC_URLS[69],
-  pollingInterval: POLLING_INTERVAL,
-  manifestEmail: 'dummy@abc.xyz',
-  manifestAppUrl: 'http://localhost:1234',
-});
+export const trezor = Object.keys(config.networks).reduce((prev, chainId) => {
+  console.log(prev);
+  return {
+    ...prev,
+    [chainId]: new TrezorConnector({
+      chainId: +chainId,
+      url: RPC_URLS[chainId],
+      pollingInterval: POLLING_INTERVAL,
+      manifestEmail: 'dummy@abc.xyz',
+      manifestAppUrl: 'http://localhost:1234',
+    }),
+  };
+}, {});

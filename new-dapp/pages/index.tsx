@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Web3Provider } from '@ethersproject/providers';
-import { Web3ReactProvider } from '@web3-react/core';
+import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 
 import { ChainId } from 'components/ChainId';
 import { BlockNumber } from 'components/BlockNumber';
@@ -29,9 +29,19 @@ const Page = () => {
   );
 };
 
+const MultisigStateContainer = ({ multisigAddress, setMultisigAddress, chainId }) => {
+  return (
+    <div key={chainId}>
+      <MultisigInfo address={multisigAddress} setMultisigAddress={setMultisigAddress} />
+      <TransactionTable address={multisigAddress} />
+      <Owners address={multisigAddress} />
+    </div>
+  );
+};
+
 const App = () => {
   const [multisigAddress, setMultisigAddress] = useState('');
-
+  const { chainId } = useWeb3React<Web3Provider>();
   return (
     <>
       <WithModal>
@@ -51,11 +61,11 @@ const App = () => {
               setMultisigAddress={setMultisigAddress}
             />
             {multisigAddress && (
-              <>
-                <MultisigInfo address={multisigAddress} setMultisigAddress={setMultisigAddress} />
-                <TransactionTable address={multisigAddress} />
-                <Owners address={multisigAddress} />
-              </>
+              <MultisigStateContainer
+                multisigAddress={multisigAddress}
+                setMultisigAddress={setMultisigAddress}
+                chainId={chainId}
+              />
             )}
           </div>
         </WithToast>

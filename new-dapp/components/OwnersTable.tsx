@@ -11,7 +11,7 @@ import { ToastContext } from 'components/Toast';
 import { AddOwnerModal, ReplaceOwnerModal } from 'components/OwnerModal';
 
 export const Owners = ({ address }) => {
-  const { library, account } = useWeb3React<Web3Provider>();
+  const { library, account, chainId } = useWeb3React<Web3Provider>();
   const { setModalContent, setModalVisible } = useContext(ModalContext);
   const { setToast } = useContext(ToastContext);
   const {
@@ -24,6 +24,10 @@ export const Owners = ({ address }) => {
     fetcher: fetcher(library, abi),
   });
   const contract = new Contract(address, abi);
+
+  useEffect(() => {
+    mutate(undefined, true);
+  }, [chainId]);
 
   useEffect(() => {
     if (!library) return;

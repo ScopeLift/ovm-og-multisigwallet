@@ -27,7 +27,10 @@ export const WithToast = ({ children }) => {
 
   useEffect(() => {
     const timer = setTimeout(() => setVisible(false), timeout);
-    return () => clearTimeout(timer);
+    return () => {
+      setVisible(false);
+      clearTimeout(timer);
+    };
   }, [content, timeout, type]);
 
   const setToast = ({

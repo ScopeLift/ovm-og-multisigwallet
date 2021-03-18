@@ -47,16 +47,22 @@ export const TOKENS_BY_NETWORK: {
   ],
 };
 
-export const fetcher = (library: Web3Provider, abi?: any) => (...args) => {
+export const fetcher = (library: Web3Provider, abi?: any) => async (...args) => {
   if (!library) throw new Error('no library');
   const [arg1, arg2, ...params] = args;
+  console.log(library);
   // it's a contract
   if (isAddress(arg1)) {
     const address = arg1;
     const method = arg2;
     const contract = new Contract(address, abi, library.getSigner());
     console.log(method);
-    return contract[method](...params);
+    try {
+      const result = await contract[method](...params);
+      return result;
+    } catch (e) {
+      return null;
+    }
   }
   // it's a eth call
   const method = arg1;

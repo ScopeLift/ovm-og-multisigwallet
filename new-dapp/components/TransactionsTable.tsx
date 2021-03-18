@@ -11,7 +11,7 @@ import { ModalContext } from 'components/Modal';
 import { ToastContext } from 'components/Toast';
 
 export const TransactionTable = ({ address }) => {
-  const { library, account } = useWeb3React<Web3Provider>();
+  const { library, account, chainId } = useWeb3React<Web3Provider>();
   const { setModalContent, setModalVisible } = useContext(ModalContext);
   const { setToast } = useContext(ToastContext);
   const [paginationIndex, setPaginationIndex] = useState(0);
@@ -20,6 +20,10 @@ export const TransactionTable = ({ address }) => {
     fetcher: fetcher(library, abi),
   });
   const contract = new Contract(address, abi);
+
+  useEffect(() => {
+    mutate(undefined, true);
+  }, [chainId]);
 
   useEffect(() => {
     if (!library) return;

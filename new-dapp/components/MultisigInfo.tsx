@@ -9,7 +9,7 @@ import { ModalContext } from 'components/Modal';
 import { ConfirmsModal } from 'components/ConfirmsModal';
 
 export const MultisigInfo = ({ address, setMultisigAddress }) => {
-  const { library } = useWeb3React<Web3Provider>();
+  const { library, chainId } = useWeb3React<Web3Provider>();
   const { setModal } = useContext(ModalContext);
   const {
     data: nConfirmations,
@@ -21,6 +21,10 @@ export const MultisigInfo = ({ address, setMultisigAddress }) => {
     fetcher: fetcher(library, abi),
   });
   const contract = new Contract(address, abi);
+
+  useEffect(() => {
+    mutate(undefined, true);
+  }, [chainId]);
 
   useEffect(() => {
     if (!library) return;
