@@ -1,3 +1,7 @@
+[build]
+  command = "yarn export"
+  publish = "out"
+
 [build.environment]
   NODE_VERSION = "14.16.0"
   YARN_VERSION = "1.22.10"

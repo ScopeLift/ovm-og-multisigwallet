@@ -32,6 +32,7 @@
   },
   "scripts": {
     "build": "next build",
+    "export": "next build && next export",
     "dev": "yarn copy-abi && next",
     "deploy": "yarn copy-abi && vercel",
     "copy-abi": "mkdir -p abi && cp ../build/contracts/ovm/MultiSigWalletFactory.json ../build/contracts/ovm/MultiSigWallet.json ./abi/",
