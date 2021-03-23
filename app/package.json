@@ -34,7 +34,7 @@
     "build": "next build",
     "dev": "yarn copy-abi && next",
     "deploy": "yarn copy-abi && vercel",
-    "copy-abi": "cp ../build/contracts/ovm/MultiSigWalletFactory.json ../build/contracts/ovm/MultiSigWallet.json ./abi/",
+    "copy-abi": "mkdir -p abi && cp ../build/contracts/ovm/MultiSigWalletFactory.json ../build/contracts/ovm/MultiSigWallet.json ./abi/",
     "clean-abi": "rm -rf ./abi/*",
     "postinstall": "patch-package"
   },
