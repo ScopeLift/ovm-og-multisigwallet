@@ -19,7 +19,6 @@ export const injected = new InjectedConnector({
 });
 
 export const ledger = Object.keys(config.networks).reduce((prev, chainId) => {
-  console.log(prev);
   return {
     ...prev,
     [chainId]: new LedgerConnector({
@@ -31,7 +30,6 @@ export const ledger = Object.keys(config.networks).reduce((prev, chainId) => {
 }, {});
 
 export const trezor = Object.keys(config.networks).reduce((prev, chainId) => {
-  console.log(prev);
   return {
     ...prev,
     [chainId]: new TrezorConnector({

@@ -70,7 +70,6 @@ export const WithToast = ({ children }) => {
 
 export const Toast = () => {
   const { content, type, visible } = useContext(ToastContext);
-  console.log(visible);
   const styleClass = [
     'w-full p-5 mb-3 transition',
     type === 'success'

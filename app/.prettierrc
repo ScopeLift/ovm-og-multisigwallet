@@ -1,15 +1,16 @@
 {
-    "overrides": [
-      {
-        "files": ["**/*.js", "**/*.ts", "**/*.tsx"],
-        "options": {
-          "bracketSpacing": true,
-          "printWidth": 100,
-          "semi": true,
-          "singleQuote": true,
-          "tabWidth": 2,
-          "trailingComma": "es5"
-        }
+  "overrides": [
+    {
+      "files": ["**/*.js", "**/*.ts", "**/*.tsx"],
+      "excludeFiles": ["**/.next/**/*", "**/.vercel/**/*", "**/out/**/*"],
+      "options": {
+        "bracketSpacing": true,
+        "printWidth": 100,
+        "semi": true,
+        "singleQuote": true,
+        "tabWidth": 2,
+        "trailingComma": "es5"
       }
-    ]
-  }
+    }
+  ]
+}

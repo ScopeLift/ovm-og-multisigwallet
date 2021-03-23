@@ -50,7 +50,6 @@ export const TOKENS_BY_NETWORK: {
 export const fetcher = (library: Web3Provider, abi?: any) => async (...args) => {
   if (!library) throw new Error('no library');
   const [arg1, arg2, ...params] = args;
-  console.log(library);
   // it's a contract
   if (isAddress(arg1)) {
     const address = arg1;

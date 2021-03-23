@@ -4,7 +4,7 @@ import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { Modal, ModalContext } from 'components/Modal';
 import { abi as multisigAbi } from 'abi/MultiSigWallet.json';
-import Image from 'next/image';
+import { CloseIcon } from 'components/Images';
 
 export const ConfirmsModal = ({ address, n }: { address: string; n: number }) => {
   const { library } = useWeb3React<Web3Provider>();
@@ -43,10 +43,7 @@ export const ConfirmsModal = ({ address, n }: { address: string; n: number }) =>
     <Modal>
       <div className="flex justify-between w-full bg-gray-200 p-3 font-semibold">
         <h2>Change Signature Requirement</h2>
-        <Image
-          src="/x.svg"
-          width="20"
-          height="20"
+        <CloseIcon
           className="opacity-50 hover:opacity-80 hover:cursor-pointer"
           onClick={() => clearModal()}
         />

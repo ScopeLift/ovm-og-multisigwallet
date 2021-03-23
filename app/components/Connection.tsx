@@ -4,7 +4,7 @@ import { useWeb3React, UnsupportedChainIdError } from '@web3-react/core';
 import { useEagerConnect, useInactiveListener } from 'hooks/react-web3';
 import { network, injected, ledger, trezor } from 'utils/connectors';
 import { config } from '../config';
-import Image from 'next/image';
+import { CloseIcon } from 'components/Images';
 import { truncateAddress } from 'utils/truncate';
 import { ModalContext } from 'components/Modal';
 import { ToastContext } from 'components/Toast';
@@ -81,10 +81,7 @@ const ConnectionModal = ({ props }) => {
       <div className="flex justify-between w-full bg-gray-200 p-3 font-semibold">
         <h2>Connect Wallet</h2>
 
-        <Image
-          src="/x.svg"
-          width="20"
-          height="20"
+        <CloseIcon
           className="opacity-50 hover:opacity-80 hover:cursor-pointer"
           onClick={() => clearModal()}
         />
@@ -160,7 +157,12 @@ export const Connection = () => {
   const { setToast } = useContext(ToastContext);
   const [intendedChainId, setIntendedChainId] = useState(null);
   useEffect(() => {
-    if (error) setToast({ type: 'error', content: getErrorMessage(error), timeout: 5000 });
+    if (error)
+      setToast({
+        type: 'error',
+        content: getErrorMessage(error),
+        timeout: 5000,
+      });
   }, [error]);
 
   // handle logic to eagerly connect to the injected ethereum provider, if it exists and has granted access already
@@ -205,7 +207,12 @@ export const Connection = () => {
     setModal({
       content: (
         <ConnectionModal
-          props={{ activatingConnector, setActivatingConnector, triedEager, setIntendedChainId }}
+          props={{
+            activatingConnector,
+            setActivatingConnector,
+            triedEager,
+            setIntendedChainId,
+          }}
         />
       ),
       styleClass: 'sm:w-3/4 md:w-1/2 lg:w-1/3',

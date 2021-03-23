@@ -4,14 +4,14 @@ module.exports = {
   theme: {
     extend: {
       transitionDelay: {
-        '5000': '5000ms',
-       }
+        5000: '5000ms',
+      },
     },
   },
   variants: {
     extend: {
-      cursor: ['hover']
+      cursor: ['hover'],
     },
   },
   plugins: [],
-}
+};
