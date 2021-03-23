@@ -1,11 +1,13 @@
-## OG multisig ND
+## OG Multisig ND
 
-### development
+### Development
+
 ```sh
-cd new-dapp
+cd app
 yarn
 yarn dev
 ```
 
-### random addresses
-a multisig deployed on Kovan OVM: 0x7b671dBae4e4Ad733Cd116aeAE378302cEAB7A06
+### Addresses
+
+A multisig is deployed on Kovan OVM at `0x7b671dBae4e4Ad733Cd116aeAE378302cEAB7A06`
