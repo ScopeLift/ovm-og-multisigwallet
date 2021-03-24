@@ -3,16 +3,17 @@ Optimistic Ethereum Multisignature Wallet
 
 The original Gnosis multisig wallet, updated to work on [Optimistic Ethereum](https://optimism.io/). The repository for the EVM-only version of this project can be [found here](https://github.com/gnosis/MultiSigWallet).
 
-🚨🚧 **WARNING: This project is a work in progress. It is not yet working on the OVM.** 🚧🚨
-
 The purpose of multisig wallets is to increase security by requiring multiple parties to agree on transactions before execution. Transactions can be executed only when confirmed by a predefined number of owners. A web user interface can be found [here](/dapp).
 
 
 Install
 -------------
 
-**NOTE**: We recommend installing [volta](https://volta.sh/) for managing versions of node and npm. This project is tested
-with node `v14.15.5`, and will automatically use said version if your system has volta installed.
+**NOTE**: We recommend installing [volta](https://volta.sh/) for managing versions of node, npm, and yarn.
+
+The contracts development environment has been tested with node `v10.23.3`. The frontend in `app/` is
+tested with node `v14.16.0` and yarn `v1.22.10`.  Both projects will automatically use the
+appropriate versions if your system has volta installed.
 
 ```bash
 git clone https://github.com/ScopeLift/ovm-og-multisigwallet.git
@@ -28,11 +29,14 @@ npm test
 npm run test:ovm
 
 # Install frontend dev dependencies
-cd dapp
-npm install
+cd app
+yarn
 
-# Run frontend tests
-npm test
+# Run frontend in dev mode
+yarn dev
+
+# Build static frontend in out/
+yarn export
 ```
 
 Deploy Contracts
