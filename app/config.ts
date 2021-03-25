@@ -27,7 +27,7 @@ export const config: AppConfig = {
         symbol: 'OETH',
         decimals: 18,
       },
-      multisigFactoryAddress: '',
+      multisigFactoryAddress: '0xA5e6EFdA500FD0BCEd87B2cd8Af1c81c0cc9D556',
     },
     69: {
       name: 'Optimistic Ethereum Testnet Kovan',
@@ -38,7 +38,7 @@ export const config: AppConfig = {
         symbol: 'KOR',
         decimals: 18,
       },
-      multisigFactoryAddress: '0x55422562984070fAeB1597342C0b684B77f5AE70',
+      multisigFactoryAddress: '0x676Fcee7AF0dD0060b238d00d43A5542f3aA3B3e',
     },
     420: {
       name: 'Optimistic Ethereum Testnet Goerli',
@@ -49,7 +49,7 @@ export const config: AppConfig = {
         symbol: 'GOR',
         decimals: 18,
       },
-      multisigFactoryAddress: '',
+      multisigFactoryAddress: '0x55422562984070fAeB1597342C0b684B77f5AE70',
     },
   },
 };
