@@ -7,7 +7,7 @@ const { MNEMONIC } = process.env;
 const printUsageAndExit = () => {
   console.log('\nUsage: npm run deploy:ovm [-- --network=<network>]\n');
   console.log('where <network> is one of:');
-  console.log('\tlocal (default), kovan, mainnet\n');
+  console.log('\tlocal (default), kovan, goerli, mainnet\n');
   console.log('Example:');
   console.log('\tnpm run deploy:ovm -- --network=kovan\n');
   process.exit();
@@ -24,7 +24,7 @@ const parseNetworkFlag = (arg) => {
     printUsageAndExit();
   }
 
-  const validNetworks = ['local', 'kovan', 'mainnet'];
+  const validNetworks = ['local', 'kovan', 'goerli', 'mainnet'];
   const networkName = split[1];
   const isValidNetwork = validNetworks.includes(networkName);
 
