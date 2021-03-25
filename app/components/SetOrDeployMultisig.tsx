@@ -29,7 +29,7 @@ export const SetOrDeployMultisig = ({
   const deployMultisig = async (e) => {
     e.preventDefault();
     try {
-      const factory = new Contract(config[chainId].multisigFactoryAddress, factoryAbi);
+      const factory = new Contract(config.networks[chainId].multisigFactoryAddress, factoryAbi);
       const tx = await factory.connect(library.getSigner()).create(owners, nConfirmations);
       const receipt = await tx.wait();
       const log = factory.interface.parseLog(
