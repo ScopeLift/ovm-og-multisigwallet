@@ -3,8 +3,20 @@ Optimistic Ethereum Multisignature Wallet
 
 The original Gnosis multisig wallet, updated to work on [Optimistic Ethereum](https://optimism.io/). The repository for the EVM-only version of this project can be [found here](https://github.com/gnosis/MultiSigWallet).
 
-The purpose of multisig wallets is to increase security by requiring multiple parties to agree on transactions before execution. Transactions can be executed only when confirmed by a predefined number of owners. A web user interface can be found [here](/dapp).
+The purpose of multisig wallets is to increase security by requiring multiple parties to agree on transactions before execution. Transactions can be executed only when confirmed by a predefined number of owners. A web user interface can be found [here](/app).
 
+Use
+--------
+
+The frontend is available for use with Optimistic Ethereum at [https://ogg.scopelift.co](https://ogg.scopelift.co). It can be used with Optimistic Mainnet or Optimistic Kovan testnet.
+
+
+The `MultiSigWalletFactory` contract is deployed at the following addresses:
+
+Network | Factory Address
+------- | ---------------
+Optimistic Mainnet | [0xA5e6EFdA500FD0BCEd87B2cd8Af1c81c0cc9D556](https://mainnet-l2-explorer.surge.sh/account/0xa5e6efda500fd0bced87b2cd8af1c81c0cc9d556)
+Optimistic Kovan | [0x676Fcee7AF0dD0060b238d00d43A5542f3aA3B3e](https://kovan-l2-explorer.surge.sh/account/0x676fcee7af0dd0060b238d00d43a5542f3aa3b3e)
 
 Install
 -------------
