@@ -8,6 +8,9 @@ async function verifyBytecode({ network, contractName, contractAddress }) {
 	const localBytecode = _getLocalBytecode({ contractName });
 	const remoteBytecode = await _getRemoteBytecode({ network, contractAddress });
 
+	console.log(localBytecode);
+	console.log(remoteBytecode);
+
 	_printTextDiff(localBytecode, remoteBytecode);
 
 	if (localBytecode === remoteBytecode) {
@@ -43,7 +46,15 @@ function _getLocalBytecode({ contractName }) {
 async function _getRemoteBytecode({ network, contractAddress }) {
 	const provider = _getOptimismProvider({ network });
 
-	return provider.getCode(contractAddress);
+	const code = await provider.getCode(contractAddress);
+
+	return code
+		.split(
+			'336000905af158600e01573d6000803e3d6000fd5b3d6001141558600a015760016000f35b'
+		)
+		.join(
+			'336000905af158601d01573d60011458600c01573d6000803e3d621234565260ea61109c52'
+		);
 }
 
 function _getOptimismProvider({ network }) {
