@@ -1,23 +1,40 @@
 const fs = require('fs');
 const program = require('commander');
 const ethers = require('ethers');
+const diff = require('fast-diff');
+const chalk = require('chalk');
 
 async function verifyBytecode({ network, contractName, contractAddress }) {
 	const localBytecode = _getLocalBytecode({ contractName });
 	const remoteBytecode = await _getRemoteBytecode({ network, contractAddress });
 
-	console.log('Local bytecode:');
-	console.log(`${localBytecode}\n`);
+	_printTextDiff(localBytecode, remoteBytecode);
 
-	console.log('Remote bytecode:');
-	console.log(`${remoteBytecode}\n`);
-
-	console.log(`Bytecodes match: ${localBytecode === remoteBytecode}`);
+	if (localBytecode === remoteBytecode) {
+		console.log(chalk.green('Bytecodes match ✅'));
+	} else {
+		console.log(chalk.red('Bytecodes do not match!'));
+	}
 };
+
+function _printTextDiff(textA, textB) {
+	const difference = diff(textA, textB);
+
+	let str = '';
+	difference.map(([type, text]) => {
+		let chalkFn = chalk.gray;
+		if (type === -1) chalkFn = chalk.red;
+		if (type === 1) chalkFn = chalk.green;
+
+		str += chalkFn(text);
+	});
+
+	console.log(`${str}\n`);
+}
 
 function _getLocalBytecode({ contractName }) {
 	const artifacts = JSON.parse(
-		fs.readFileSync(`./build/contracts/${contractName}.json`, 'utf8')
+		fs.readFileSync(`./build/contracts/ovm/${contractName}.json`, 'utf8')
 	);
 
 	return artifacts.deployedBytecode;
