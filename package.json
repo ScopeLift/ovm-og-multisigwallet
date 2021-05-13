@@ -11,7 +11,8 @@
     "deploy": "npm run compile && truffle exec deploy/deploy.js",
     "deploy:ovm": "npm run compile:ovm && node ./deploy/deploy-ovm.js",
     "deploy-test-token:ovm": "npm run compile:ovm && node ./deploy/deploy-test-token-ovm.js",
-    "interact": "node ./deploy/factory-interaction.js"
+    "interact": "node ./deploy/factory-interaction.js",
+    "script": "node scripts/index.js"
   },
   "repository": {
     "type": "git",
@@ -39,6 +40,7 @@
     "@eth-optimism/solc": "0.5.16-alpha.7",
     "@truffle/hdwallet-provider": "^1.2.2",
     "babel-eslint": "7.2.3",
+    "commander": "^3.0.2",
     "concurrently": "^5.3.0",
     "dotenv": "^8.2.0",
     "eslint": "4.19.1",
