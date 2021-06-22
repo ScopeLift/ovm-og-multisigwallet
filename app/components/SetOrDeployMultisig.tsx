@@ -5,6 +5,7 @@ import { Contract } from '@ethersproject/contracts';
 import { ModalContext } from 'components/Modal';
 import { abi as factoryAbi } from 'abi/MultiSigWalletFactory.json';
 import { config } from 'config';
+import { validateOwners } from '../utils';
 
 export const SetOrDeployMultisig = ({
   address,
@@ -30,6 +31,7 @@ export const SetOrDeployMultisig = ({
     e.preventDefault();
     try {
       const factory = new Contract(config.networks[chainId].multisigFactoryAddress, factoryAbi);
+      await validateOwners({ owners, required: nConfirmations });
       const tx = await factory.connect(library.getSigner()).create(owners, nConfirmations);
       const receipt = await tx.wait();
       const log = factory.interface.parseLog(
