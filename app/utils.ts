@@ -39,32 +39,4 @@ export function getContract(
   return new Contract(address, ABI, getProviderOrSigner(library, account) as any);
 }
 
-// thanks @ajsantander -- (https://github.com/ajsantander/ovm-og-multisigwallet/blob/master/scripts/validate-owners.js)
-export const validateOwners = async ({ owners, required }) => {
-  const encodedConstructorParameters = getEncodedConstructorParameters({ owners, required });
-  if (!checkBytesAreSafeForOvm(encodedConstructorParameters)) {
-    throw new Error('MultiSigWallet constructor parameters are not safe!');
-  }
-};
-
-const getEncodedConstructorParameters = ({ owners, required }) => {
-  return defaultAbiCoder.encode(['address[]', 'uint256'], [owners, required]);
-};
-
-const checkBytesAreSafeForOvm = (bytes) => {
-  for (let i = 0; i < bytes.length; i += 2) {
-    const curByte = bytes.substr(i, 2);
-    const opNum = parseInt(curByte, 16);
-
-    if (opNum >= 96 && opNum < 128) {
-      i += 2 * (opNum - 95);
-      continue;
-    }
-
-    if (curByte === '5b') {
-      return false;
-    }
-  }
-
-  return true;
-};
+export const bytesAreSafe = (address) => !address.match(/.{2}/g).find((byte) => byte === '5b');

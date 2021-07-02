@@ -5,7 +5,7 @@ import { Contract } from '@ethersproject/contracts';
 import { ModalContext } from 'components/Modal';
 import { abi as factoryAbi } from 'abi/MultiSigWalletFactory.json';
 import { config } from 'config';
-import { validateOwners } from '../utils';
+import { bytesAreSafe } from '../utils';
 
 export const SetOrDeployMultisig = ({
   address,
@@ -14,13 +14,12 @@ export const SetOrDeployMultisig = ({
   address?: string;
   setMultisigAddress: Function;
 }) => {
-  const { library, chainId, account } = useWeb3React<Web3Provider>();
+  const { library, chainId } = useWeb3React<Web3Provider>();
   const [error, setError] = useState('');
   const [inputAddress, setInputAddress] = useState('');
   const [nOwnerInputs, setNOwnerInputs] = useState(1);
-  const [owners, setOwners] = useState<string[]>([]);
+  const [owners, setOwners] = useState<{ address: string; isValid: boolean }[]>([]);
   const [nConfirmations, setNConfirmations] = useState(1);
-  const { setModalContent, setModalVisible } = useContext(ModalContext);
 
   const openMultisig = (e) => {
     e.preventDefault();
@@ -31,8 +30,8 @@ export const SetOrDeployMultisig = ({
     e.preventDefault();
     try {
       const factory = new Contract(config.networks[chainId].multisigFactoryAddress, factoryAbi);
-      await validateOwners({ owners, required: nConfirmations });
-      const tx = await factory.connect(library.getSigner()).create(owners, nConfirmations);
+      const ownerAddresses = owners.map((owner) => owner.address);
+      const tx = await factory.connect(library.getSigner()).create(ownerAddresses, nConfirmations);
       const receipt = await tx.wait();
       const log = factory.interface.parseLog(
         receipt.logs.find(({ topics }) =>
@@ -44,6 +43,17 @@ export const SetOrDeployMultisig = ({
     } catch (e) {
       setError(e.message);
     }
+  };
+
+  const removeOwner = (e) => {
+    e.preventDefault();
+    setOwners(owners.slice(0, nOwnerInputs - 1));
+    setNOwnerInputs(nOwnerInputs - 1);
+  };
+
+  const addOwner = (e) => {
+    e.preventDefault();
+    setNOwnerInputs(nOwnerInputs + 1);
   };
 
   if (address) return <></>;
@@ -74,38 +84,51 @@ export const SetOrDeployMultisig = ({
           Create multisig:
           <form className="">
             <ul className="block mx-auto">
-              {[...Array(nOwnerInputs).keys()].map((n) => (
-                <li key={n} className="my-1 p-2 w-5/6 mx-auto">
-                  <label className="text-sm text-gray-600">Owner {n + 1}:</label>
-                  <input
-                    className="font-mono w-full my-1 mx-2 p-1"
-                    onChange={(e) => {
-                      const ownerArr = owners;
-                      ownerArr[n] = e.target.value;
-                      return setOwners(ownerArr);
-                    }}
-                  />
-                </li>
-              ))}
+              {[...Array(nOwnerInputs).keys()].map((n) => {
+                const isInvalid = owners[n]?.isValid === false;
+                return (
+                  <li key={n} className="my-1 p-2 w-5/6 mx-auto">
+                    <label className="text-sm text-gray-600">Owner {n + 1}:</label>
+                    <input
+                      className={`font-mono w-full my-1 mx-2 p-1 ${
+                        isInvalid ? 'border border-red-700 text-red-700' : ''
+                      }`}
+                      onChange={(e) => {
+                        const ownerArr = owners;
+                        ownerArr[n] = { address: e.target.value, isValid: true };
+                        return setOwners([...ownerArr]);
+                      }}
+                      onBlur={(e) => {
+                        if (!owners[n]?.address) return;
+                        if (!bytesAreSafe(owners[n].address)) {
+                          const ownerArr = owners;
+                          ownerArr[n].isValid = false;
+                          return setOwners([...ownerArr]);
+                        }
+                      }}
+                    />
+                    {isInvalid && (
+                      <p className="text-red-800 text-sm mx-2">
+                        This address contains a byte sequence that is unsafe as an OVM constructor
+                        parameter. Please remove the address here and add it to the multisig after
+                        it is deployed.
+                      </p>
+                    )}
+                  </li>
+                );
+              })}
               <li className="text-center">
                 {nOwnerInputs > 1 && (
                   <button
                     className="bg-gray-200 text-red-500 border border-red-300 px-1 text-sm rounded mr-2"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setOwners(owners.slice(0, nOwnerInputs - 1));
-                      setNOwnerInputs(nOwnerInputs - 1);
-                    }}
+                    onClick={removeOwner}
                   >
                     - Remove Owner
                   </button>
                 )}
                 <button
                   className="bg-gray-200 text-gray-500 border border-gray-300 px-1 text-sm rounded"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setNOwnerInputs(nOwnerInputs + 1);
-                  }}
+                  onClick={addOwner}
                 >
                   + Add Additional Owner
                 </button>
