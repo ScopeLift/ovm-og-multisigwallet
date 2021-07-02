@@ -41,7 +41,6 @@ export function getContract(
 
 // thanks @ajsantander -- (https://github.com/ajsantander/ovm-og-multisigwallet/blob/master/scripts/validate-owners.js)
 export const validateOwners = async ({ owners, required }) => {
-  owners = owners.split(',');
   const encodedConstructorParameters = getEncodedConstructorParameters({ owners, required });
   if (!checkBytesAreSafeForOvm(encodedConstructorParameters)) {
     throw new Error('MultiSigWallet constructor parameters are not safe!');
