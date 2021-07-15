@@ -1,29 +1,24 @@
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
+import { useRouter } from 'next/router';
 import { Contract } from '@ethersproject/contracts';
-import { ModalContext } from 'components/Modal';
 import { abi as factoryAbi } from 'abi/MultiSigWalletFactory.json';
 import { config } from 'config';
 import { bytesAreSafe } from '../utils';
 
-export const SetOrDeployMultisig = ({
-  address,
-  setMultisigAddress,
-}: {
-  address?: string;
-  setMultisigAddress: Function;
-}) => {
+export const SetOrDeployMultisig = ({ address }: { address?: string }) => {
   const { library, chainId } = useWeb3React<Web3Provider>();
   const [error, setError] = useState('');
   const [inputAddress, setInputAddress] = useState('');
   const [nOwnerInputs, setNOwnerInputs] = useState(1);
   const [owners, setOwners] = useState<{ address: string; isValid: boolean }[]>([]);
   const [nConfirmations, setNConfirmations] = useState(1);
+  const router = useRouter();
 
   const openMultisig = (e) => {
     e.preventDefault();
-    setMultisigAddress(inputAddress);
+    router.push(`/wallet/${inputAddress}`);
   };
 
   const deployMultisig = async (e) => {
@@ -39,7 +34,7 @@ export const SetOrDeployMultisig = ({
         )
       );
       console.log('MultiSigWallet instantiated at:', log.args.instantiation);
-      setMultisigAddress(log.args.instantiation);
+      router.push(`/wallet/${log.args.instantiation}`);
     } catch (e) {
       setError(e.message);
     }
