@@ -34,7 +34,7 @@ const MyApp = ({
               </div>
               <div className="mt-4">
                 <Toast />
-                <Component {...pageProps} />;
+                <Component {...pageProps} />
               </div>
             </div>
           </WithToast>
