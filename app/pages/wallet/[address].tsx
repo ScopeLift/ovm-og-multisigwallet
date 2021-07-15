@@ -9,12 +9,15 @@ const Page = () => {
   const { chainId } = useWeb3React<Web3Provider>();
   const router = useRouter();
   const { address } = router.query;
-  return (
+  console.log(address);
+  return address ? (
     <div key={chainId}>
       <MultisigInfo address={address} />
       <TransactionTable address={address} />
       <Owners address={address} />
     </div>
+  ) : (
+    <></>
   );
 };
 
