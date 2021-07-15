@@ -1,4 +1,5 @@
 import React, { useEffect, useContext } from 'react';
+import Link from 'next/link';
 import useSWR from 'swr';
 import { fetcher } from 'utils/fetcher';
 import { useWeb3React } from '@web3-react/core';
@@ -8,7 +9,7 @@ import { abi } from 'abi/MultiSigWallet.json';
 import { ModalContext } from 'components/Modal';
 import { ConfirmsModal } from 'components/ConfirmsModal';
 
-export const MultisigInfo = ({ address, setMultisigAddress }) => {
+export const MultisigInfo = ({ address }) => {
   const { library, chainId } = useWeb3React<Web3Provider>();
   const { setModal } = useContext(ModalContext);
   const {
@@ -38,11 +39,6 @@ export const MultisigInfo = ({ address, setMultisigAddress }) => {
     };
   }, [library]);
 
-  const clearMultisigAddress = (e) => {
-    e.preventDefault();
-    setMultisigAddress('');
-  };
-
   const showRequirementModal = (e) => {
     e.preventDefault();
     setModal({
@@ -57,12 +53,11 @@ export const MultisigInfo = ({ address, setMultisigAddress }) => {
     <div className="bg-gradient-to-r from-purple-100 via-yellow-300 to-red-100 rounded-lg p-6">
       <h2 className="text-xl">
         Multisig {address}
-        <button
-          className="ml-2 text-sm rounded border px-2 border-gray-400 bg-gray-100 text-gray-800"
-          onClick={clearMultisigAddress}
-        >
-          Switch
-        </button>
+        <Link href="/">
+          <button className="ml-2 text-sm rounded border px-2 border-gray-400 bg-gray-100 text-gray-800">
+            Switch
+          </button>
+        </Link>
       </h2>
       <div className="">
         {nConfirms} {nConfirms > 1 ? 'signatures' : 'signature'} needed to execute a transaction{' '}
