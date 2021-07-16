@@ -21,11 +21,12 @@ export const MultisigInfo = ({ address }) => {
   } = useSWR(library ? [address, 'required'] : null, {
     fetcher: fetcher(library, abi),
   });
-  const contract = new Contract(address, abi);
 
   useEffect(() => {
     mutate(undefined, true);
   }, [chainId]);
+
+  const contract = new Contract(address, abi);
 
   useEffect(() => {
     if (!library) return;
