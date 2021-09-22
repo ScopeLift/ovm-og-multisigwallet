@@ -6,8 +6,6 @@ import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { abi } from 'abi/MultiSigWallet.json';
 import { ToastContext } from 'components/Toast';
-import { ModalContext } from './Modal';
-import { TransactionDataModal } from './TransactionDataModal';
 import { ClickableAddress } from './ClickableAddress';
 
 export const TransactionRow = ({ address, transactionId, cellStyle }) => {
