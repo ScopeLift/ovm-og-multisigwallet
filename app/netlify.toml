@@ -7,6 +7,7 @@
   YARN_VERSION = "1.22.10"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/wallet/*"
+  to = "/wallet/[address].html"
   status = 200
+  force = true
