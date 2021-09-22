@@ -5,10 +5,10 @@ import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { abi } from 'abi/MultiSigWallet.json';
-import { truncateAddress } from 'utils/truncate';
 import { ModalContext } from 'components/Modal';
 import { ToastContext } from 'components/Toast';
 import { AddOwnerModal, ReplaceOwnerModal } from 'components/OwnerModal';
+import { ClickableAddress } from './ClickableAddress';
 
 export const Owners = ({ address }) => {
   const { library, account, chainId } = useWeb3React<Web3Provider>();
@@ -113,7 +113,9 @@ export const Owners = ({ address }) => {
         <tbody>
           {owners.map((owner) => (
             <tr key={owner}>
-              <td className={cellStyle}>{owner}</td>
+              <td className={cellStyle}>
+                <ClickableAddress address={owner} />
+              </td>
               <td className={cellStyle}>
                 <button
                   className="px-2 mr-2 font-sans rounded border border-gray-300 text-sm"

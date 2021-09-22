@@ -8,6 +8,7 @@ import { Contract } from '@ethersproject/contracts';
 import { abi } from 'abi/MultiSigWallet.json';
 import { ModalContext } from 'components/Modal';
 import { ConfirmsModal } from 'components/ConfirmsModal';
+import { ClickableAddress } from './ClickableAddress';
 
 export const MultisigInfo = ({ address }) => {
   const { library, chainId } = useWeb3React<Web3Provider>();
@@ -52,8 +53,9 @@ export const MultisigInfo = ({ address }) => {
 
   return (
     <div className="bg-gradient-to-r from-purple-100 via-yellow-300 to-red-100 rounded-lg p-6">
-      <h2 className="text-xl">
-        Multisig {address}
+      <h2 className="flex text-xl">
+        <span className="mr-2">Multisig</span>
+        <ClickableAddress address={address} />
         <Link href="/">
           <button className="ml-2 text-sm rounded border px-2 border-gray-400 bg-gray-100 text-gray-800">
             Switch
