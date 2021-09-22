@@ -5,8 +5,10 @@ import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { abi } from 'abi/MultiSigWallet.json';
-import { truncateAddress } from 'utils/truncate';
 import { ToastContext } from 'components/Toast';
+import { ModalContext } from './Modal';
+import { TransactionDataModal } from './TransactionDataModal';
+import { ClickableAddress } from './ClickableAddress';
 
 export const TransactionRow = ({ address, transactionId, cellStyle }) => {
   const { account, library } = useWeb3React<Web3Provider>();
@@ -108,7 +110,7 @@ export const TransactionRow = ({ address, transactionId, cellStyle }) => {
     <tr>
       <td className={cellStyle}>{transactionId}</td>
       <td className={cellStyle}>
-        <span className="block w-44">{truncateAddress(transaction.destination)}</span>
+        <ClickableAddress address={transaction.destination} truncate />
       </td>
       <td className={cellStyle}>
         <span className="truncate block w-44">{transaction.data}</span>
@@ -119,7 +121,7 @@ export const TransactionRow = ({ address, transactionId, cellStyle }) => {
             <div className="bg-pink-100 rounded p-3 mr-2">{confirmations.length}</div>
             <ul>
               {confirmations.map((address) => (
-                <li key={address}>{address}</li>
+                <ClickableAddress key={address} address={address} />
               ))}
             </ul>
           </div>
