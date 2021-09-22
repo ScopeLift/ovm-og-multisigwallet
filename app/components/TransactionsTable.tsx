@@ -52,7 +52,7 @@ export const TransactionTable = ({ address }) => {
   if (!transactionCount) return <></>;
   const parsedTxCount = parseInt(transactionCount.toString());
   const txPerPage = 5;
-  const pageCount = Math.ceil(parsedTxCount / txPerPage);
+  const pageCount = parsedTxCount ? Math.ceil(parsedTxCount / txPerPage) : 1;
   const cellStyle = 'border border-gray-500 p-2';
   return (
     <div className="my-10">

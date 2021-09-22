@@ -1,4 +1,5 @@
 import '../styles/globals.css';
+import Head from 'next/head';
 import { WithModal } from 'components/Modal';
 import { WithToast, Toast } from 'components/Toast';
 import { Web3Provider } from '@ethersproject/providers';
@@ -22,6 +23,10 @@ const MyApp = ({
 }) => {
   return (
     <>
+      <Head>
+        <title>OG Gnosis Multisig on OVM</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
       <Web3ReactProvider getLibrary={getLibrary}>
         <WithModal>
           <WithToast>
