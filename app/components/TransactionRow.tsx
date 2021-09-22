@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useEffect, useContext } from 'react';
 import useSWR from 'swr';
 import { fetcher } from 'utils/fetcher';
 import { useWeb3React } from '@web3-react/core';
@@ -6,10 +6,12 @@ import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { abi } from 'abi/MultiSigWallet.json';
 import { ToastContext } from 'components/Toast';
-import { ClickableAddress } from './ClickableAddress';
+import { ModalContext } from './Modal';
+import { TransactionDataModal } from './TransactionDataModal';
 
 export const TransactionRow = ({ address, transactionId, cellStyle }) => {
   const { account, library } = useWeb3React<Web3Provider>();
+  const { setModal } = useContext(ModalContext);
   const { setToast } = useContext(ToastContext);
   const { data: transaction, mutate } = useSWR(
     library ? [address, 'transactions', transactionId] : null,
@@ -102,6 +104,14 @@ export const TransactionRow = ({ address, transactionId, cellStyle }) => {
       });
     }
   };
+
+  const showTransactionDataModal = (data: string) => {
+    setModal({
+      content: <TransactionDataModal data={data} />,
+      styleClass: 'sm:w-full',
+    });
+  };
+
   if (!transaction || !confirmations) return <tr></tr>;
   const txStatus = transaction.executed ? 'executed' : isConfirmed ? 'failed' : 'pending';
   return (
@@ -111,7 +121,12 @@ export const TransactionRow = ({ address, transactionId, cellStyle }) => {
         <ClickableAddress address={transaction.destination} truncate />
       </td>
       <td className={cellStyle}>
-        <span className="truncate block w-44">{transaction.data}</span>
+        <span
+          className="truncate block w-44 hover:underline cursor-pointer"
+          onClick={() => showTransactionDataModal(transaction.data)}
+        >
+          {transaction.data}
+        </span>
       </td>
       <td className={cellStyle}>
         <div className="flex flex-row justify-between">
