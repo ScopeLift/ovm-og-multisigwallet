@@ -58,7 +58,9 @@ export const Modal = ({ children, styleClass = 'w-1/2' }) => {
   return (
     <div className="fixed flex justify-center items-center inset-0 w-full h-full z-20 bg-black bg-opacity-50 duration-300 overflow-y-auto">
       <div ref={wrapperRef} className={'mx-2 sm:mx-auto my-10 opacity-100 ' + styleClass}>
-        <div className="bg-white shadow-lg rounded-md text-gray-900 z-20">{children}</div>
+        <div className="bg-white shadow-lg rounded-md overflow-hidden text-gray-900 z-20">
+          {children}
+        </div>
       </div>
     </div>
   );
