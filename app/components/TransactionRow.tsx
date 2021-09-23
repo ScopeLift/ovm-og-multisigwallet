@@ -8,6 +8,7 @@ import { abi } from 'abi/MultiSigWallet.json';
 import { ToastContext } from 'components/Toast';
 import { ModalContext } from './Modal';
 import { TransactionDataModal } from './TransactionDataModal';
+import { ClickableAddress } from './ClickableAddress';
 
 export const TransactionRow = ({ address, transactionId, cellStyle }) => {
   const { account, library } = useWeb3React<Web3Provider>();
@@ -105,9 +106,9 @@ export const TransactionRow = ({ address, transactionId, cellStyle }) => {
     }
   };
 
-  const showTransactionDataModal = (data: string) => {
+  const showTransactionDataModal = (txId: string, data: string) => {
     setModal({
-      content: <TransactionDataModal data={data} />,
+      content: <TransactionDataModal txId={txId} data={data} />,
       styleClass: 'sm:w-full',
     });
   };
@@ -123,7 +124,7 @@ export const TransactionRow = ({ address, transactionId, cellStyle }) => {
       <td className={cellStyle}>
         <span
           className="truncate block w-44 hover:underline cursor-pointer"
-          onClick={() => showTransactionDataModal(transaction.data)}
+          onClick={() => showTransactionDataModal(transactionId, transaction.data)}
         >
           {transaction.data}
         </span>

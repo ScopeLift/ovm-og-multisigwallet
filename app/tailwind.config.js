@@ -4,6 +4,7 @@ module.exports = {
   theme: {
     cursor: {
       auto: 'auto',
+      alias: 'alias',
       default: 'default',
       pointer: 'pointer',
       wait: 'wait',
