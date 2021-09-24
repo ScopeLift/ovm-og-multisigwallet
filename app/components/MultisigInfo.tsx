@@ -44,7 +44,7 @@ export const MultisigInfo = ({ address }) => {
   const showRequirementModal = (e) => {
     e.preventDefault();
     setModal({
-      content: <ConfirmsModal address={address} n={parseInt(nConfirmations)} />,
+      content: <ConfirmsModal address={address} currentConfirmations={parseInt(nConfirmations)} />,
       styleClass: 'sm:w-full',
     });
   };

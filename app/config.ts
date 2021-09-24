@@ -30,7 +30,7 @@ export const config: AppConfig = {
       multisigFactoryAddress: '0xA5e6EFdA500FD0BCEd87B2cd8Af1c81c0cc9D556',
     },
     69: {
-      name: 'Optimistic Ethereum Testnet Kovan',
+      name: 'Optimistic Kovan',
       rpcUrl: 'https://kovan.optimism.io/',
       blockExplorerUrls: null,
       nativeCurrency: {
