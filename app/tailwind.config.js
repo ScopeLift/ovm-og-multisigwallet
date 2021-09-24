@@ -22,8 +22,12 @@ module.exports = {
   },
   variants: {
     extend: {
-      cursor: ['hover'],
+      cursor: ['disabled', 'hover'],
       display: ['group-hover'],
+      backgroundColor: ['disabled'],
+      backgroundImage: ['disabled'],
+      opacity: ['disabled'],
+      textColor: ['disabled'],
     },
   },
   plugins: [],

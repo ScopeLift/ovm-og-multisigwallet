@@ -1,17 +1,43 @@
-import { useState, useContext } from 'react';
+import { FC, useEffect, useState, useContext } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { Modal, ModalContext } from 'components/Modal';
 import { abi as multisigAbi } from 'abi/MultiSigWallet.json';
 import { CloseIcon } from 'components/Images';
+import useSWR from 'swr';
+import { fetcher } from 'utils/fetcher';
 
-export const ConfirmsModal = ({ address, n }: { address: string; n: number }) => {
+interface ConfirmsModalProps {
+  address: string;
+  currentConfirmations: number;
+}
+
+export const ConfirmsModal: FC<ConfirmsModalProps> = ({ address, currentConfirmations }) => {
   const { library } = useWeb3React<Web3Provider>();
   const { clearModal } = useContext(ModalContext);
-  const [nConfirms, setNConfirms] = useState(n);
+  const [nConfirms, setNConfirms] = useState(currentConfirmations);
   const [error, setError] = useState('');
   const contract = new Contract(address, multisigAbi);
+  const {
+    data: owners,
+    mutate,
+  }: {
+    data?: string[];
+    mutate: Function;
+  } = useSWR(library ? [address, 'getOwners'] : null, {
+    fetcher: fetcher(library, multisigAbi),
+  });
+
+  useEffect(() => {
+    mutate(undefined, true);
+  }, []);
+
+  useEffect(() => {
+    if (nConfirms < 1) setError('Signature requirement must be at least 1');
+    else if (nConfirms > owners.length) setError('Cannot require more signatures than owners');
+    else setError('');
+  }, [nConfirms]);
 
   const changeRequirement = async () => {
     const tx = await contract
@@ -57,14 +83,17 @@ export const ConfirmsModal = ({ address, n }: { address: string; n: number }) =>
             <label className={labelStyle}># signatures required</label>
             <input
               type="number"
+              min={1}
+              max={owners.length}
               className={inputStyle}
-              value={nConfirms}
+              value={isNaN(nConfirms) ? '' : nConfirms}
               onChange={(e) => setNConfirms(parseInt(e.target.value))}
             />
           </li>
         </ul>
         <button
-          className="mx-auto block bg-gradient-to-r from-green-400 to-blue-500 px-3 py-2 text-white font-semibold rounded"
+          disabled={Boolean(error) || nConfirms === currentConfirmations}
+          className="mx-auto block bg-gradient-to-r from-green-400 to-blue-500 px-3 py-2 text-white font-semibold rounded disabled:text-red disabled:bg-none disabled:bg-gray-500 disabled:opacity-50 disabled:text-gray-300 disabled:cursor-not-allowed"
           onClick={sendTx}
         >
           Submit
