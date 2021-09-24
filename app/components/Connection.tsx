@@ -18,7 +18,7 @@ export const Connection: FC<ConnectionProps> = ({
   const jazziconRef = useRef<HTMLDivElement>();
 
   useEffect(() => {
-    if (!account) return;
+    if (!account || !jazziconRef.current || jazziconRef.current.childElementCount) return;
 
     const accountjazziconID = account
       .slice(2)
@@ -26,9 +26,7 @@ export const Connection: FC<ConnectionProps> = ({
       .map((char) => char.charCodeAt(0))
       .reduce((prev, cur) => prev + cur, 0);
     const jazziconEl = jazzicon(16, accountjazziconID);
-
-    if (jazziconRef.current && !jazziconRef.current.childElementCount)
-      jazziconRef.current?.appendChild(jazziconEl);
+    jazziconRef.current?.appendChild(jazziconEl);
   }, [account]);
 
   return (
