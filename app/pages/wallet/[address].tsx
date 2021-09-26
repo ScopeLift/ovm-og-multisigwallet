@@ -6,29 +6,43 @@ import { MultisigInfo } from 'components/MultisigInfo';
 import { Owners } from 'components/OwnersTable';
 import { TransactionTable } from 'components/TransactionsTable';
 import { isAddress } from '@ethersproject/address';
-const Page = () => {
+import { NextPage } from 'next';
+import { Spinner } from 'components/Images';
+
+const WalletPage: NextPage = () => {
   const { chainId } = useWeb3React<Web3Provider>();
   const router = useRouter();
   const { address } = router.query;
-  return isAddress(address as string) ? (
-    <div key={chainId}>
-      <MultisigInfo address={address} />
-      <TransactionTable address={address} />
-      <Owners address={address} />
-    </div>
-  ) : (
+
+  if (typeof address === 'undefined') {
+    return (
+      <div className="flex items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (isAddress(address as string)) {
+    return (
+      <div key={chainId}>
+        <MultisigInfo address={address} />
+        <TransactionTable address={address} />
+        <Owners address={address} />
+      </div>
+    );
+  }
+
+  return (
     <div className="w-1/2 mt-7 mx-auto text-center">
       <h1 className="block">
         Sorry, you tried to open a wallet with the invalid address{' '}
         <span className="font-semibold">{address}</span>.
       </h1>
       <Link href="/">
-        <button className="block mt-3 px-3 py-2 mx-auto text-white text-sm font-semibold bg-gradient-to-r from-green-400 to-blue-500 rounded">
-          Go Back
-        </button>
+        <button className="btn-primary block mx-auto mt-3">Go Back</button>
       </Link>
     </div>
   );
 };
 
-export default Page;
+export default WalletPage;

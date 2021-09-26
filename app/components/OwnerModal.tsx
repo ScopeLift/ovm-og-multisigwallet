@@ -1,31 +1,71 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, FC } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { Modal, ModalContext } from 'components/Modal';
 import { abi as multisigAbi } from 'abi/MultiSigWallet.json';
 import { CloseIcon } from 'components/Images';
+import { isAddress } from '@ethersproject/address';
+import { Form, Field } from 'react-final-form';
+import { FORM_ERROR } from 'final-form';
+import useSWR from 'swr';
+import { fetcher } from 'utils/fetcher';
 
-export const AddOwnerModal = ({ address }) => <OwnerModal address={address} addOrReplace="add" />;
-export const ReplaceOwnerModal = ({ address, ownerToBeReplaced }) => (
+interface FormValues {
+  newOwnerAddress: string;
+  oldOwnerAddress: string;
+}
+
+interface FormErrors {
+  newOwnerAddress?: string;
+  oldOwnerAddress?: string;
+}
+
+interface AddOwnerModalProps {
+  address: string;
+}
+
+interface ReplaceOwnerModalProps extends AddOwnerModalProps {
+  ownerToBeReplaced?: string;
+}
+
+interface OwnerModalProps extends ReplaceOwnerModalProps {
+  addOrReplace: 'add' | 'replace';
+}
+
+export const AddOwnerModal: FC<AddOwnerModalProps> = ({ address }) => (
+  <OwnerModal address={address} addOrReplace="add" />
+);
+export const ReplaceOwnerModal: FC<ReplaceOwnerModalProps> = ({ address, ownerToBeReplaced }) => (
   <OwnerModal address={address} addOrReplace="replace" ownerToBeReplaced={ownerToBeReplaced} />
 );
 
-export const OwnerModal = ({
-  address,
-  addOrReplace,
-  ownerToBeReplaced,
-}: {
-  address: string;
-  addOrReplace: 'add' | 'replace';
-  ownerToBeReplaced?: string;
-}) => {
+export const OwnerModal: FC<OwnerModalProps> = ({ address, addOrReplace, ownerToBeReplaced }) => {
   const { library } = useWeb3React<Web3Provider>();
   const { clearModal } = useContext(ModalContext);
-  const [newOwnerAddress, setNewOwnerAddress] = useState('');
-  const [oldOwnerAddress, setOldOwnerAddress] = useState(ownerToBeReplaced);
-  const [error, setError] = useState('');
   const contract = new Contract(address, multisigAbi);
+  const {
+    data: owners,
+    mutate,
+  }: {
+    data?: string[];
+    mutate: Function;
+  } = useSWR(library ? [address, 'getOwners'] : null, {
+    fetcher: fetcher(library, multisigAbi),
+  });
+
+  useEffect(() => {
+    mutate(undefined, true);
+  }, []);
+
+  const canSubmit = (values: FormValues, errors: FormErrors) => {
+    const hasValues =
+      values.newOwnerAddress.length &&
+      (addOrReplace === 'replace' ? values.oldOwnerAddress.length : true);
+    const hasErrors = Boolean(Object.keys(errors).length);
+
+    return hasValues && !hasErrors;
+  };
 
   const addOwner = async (owner: string) => {
     const tx = await contract
@@ -51,8 +91,7 @@ export const OwnerModal = ({
     return receipt;
   };
 
-  const sendTx = async (e) => {
-    e.preventDefault();
+  const sendTx = async ({ newOwnerAddress, oldOwnerAddress }: FormValues) => {
     try {
       const receipt =
         addOrReplace === 'add'
@@ -61,13 +100,14 @@ export const OwnerModal = ({
       clearModal();
       return receipt;
     } catch (e) {
-      setError(e.message);
+      return { [FORM_ERROR]: e.message };
     }
   };
 
-  const itemStyle = 'flex justify-between p-4 items-center';
+  const itemStyle = 'flex justify-between items-center';
   const inputStyle = 'border border-gray-500 w-80 font-mono';
   const labelStyle = '';
+
   return (
     <Modal>
       <div className="flex justify-between w-full bg-gray-200 p-3 font-semibold">
@@ -77,38 +117,96 @@ export const OwnerModal = ({
           onClick={() => clearModal()}
         />
       </div>
-      {error && (
-        <div className="bg-red-100 border border-red-500 text-red-500 p-3 m-5">{error}</div>
-      )}
-      <form className="pb-5">
-        <ul>
-          <li className={itemStyle}>
-            <label className={labelStyle}>New owner address</label>
-            <input
-              className={inputStyle}
-              placeholder=""
-              onChange={(e) => setNewOwnerAddress(e.target.value)}
-            />
-          </li>
-          {addOrReplace === 'replace' && (
-            <li className={itemStyle}>
-              <label className={labelStyle}>Replaced owner address</label>
-              <input
-                className={inputStyle}
-                placeholder=""
-                value={oldOwnerAddress}
-                onChange={(e) => setOldOwnerAddress(e.target.value)}
-              />
-            </li>
-          )}
-        </ul>
-        <button
-          className="mx-auto block bg-gradient-to-r from-green-400 to-blue-500 px-3 py-2 text-white font-semibold rounded"
-          onClick={sendTx}
-        >
-          Submit
-        </button>
-      </form>
+      <Form
+        onSubmit={sendTx}
+        initialValues={{
+          newOwnerAddress: '',
+          oldOwnerAddress: ownerToBeReplaced ?? '',
+        }}
+        validate={({ newOwnerAddress, oldOwnerAddress }: FormValues) => {
+          const errors: FormErrors = {};
+
+          if (newOwnerAddress?.length && !isAddress(newOwnerAddress)) {
+            errors.newOwnerAddress = 'Please enter a valid address';
+          } else if (
+            newOwnerAddress?.length &&
+            owners.some((owner) => owner.toUpperCase() === newOwnerAddress.toUpperCase())
+          ) {
+            errors.newOwnerAddress = 'This address is already an owner';
+          }
+
+          if (addOrReplace === 'replace') {
+            if (oldOwnerAddress?.length && !isAddress(oldOwnerAddress)) {
+              errors.oldOwnerAddress = 'Please enter a valid address';
+            } else if (
+              oldOwnerAddress?.length &&
+              !owners.some((owner) => owner.toUpperCase() === oldOwnerAddress.toUpperCase())
+            ) {
+              errors.oldOwnerAddress = 'This address is not an owner';
+            }
+          }
+
+          return errors;
+        }}
+        render={({ handleSubmit, errors, submitting, values, submitError }) => (
+          <>
+            {Boolean(submitError) && (
+              <div className="bg-red-100 border border-red-500 text-red-500 p-3 m-5">
+                {submitError}
+              </div>
+            )}
+            <form className="pb-5" onSubmit={handleSubmit}>
+              <ul>
+                <li>
+                  <Field name="newOwnerAddress" parse={(value) => String(value)}>
+                    {({ input, meta }) => (
+                      <div className="flex-col m-4">
+                        <div className={itemStyle}>
+                          <label className={labelStyle}>New owner address</label>
+                          <input
+                            {...input}
+                            className={`${inputStyle} ${meta.error ? 'text-red-500' : ''}`}
+                          />
+                        </div>
+                        {meta.error && (
+                          <div className="text-right text-red-500 m-1">{meta.error}</div>
+                        )}
+                      </div>
+                    )}
+                  </Field>
+                </li>
+                {addOrReplace === 'replace' && (
+                  <li>
+                    <Field name="oldOwnerAddress" parse={(value) => String(value)}>
+                      {({ input, meta }) => (
+                        <div className="flex-col m-4">
+                          <div className={itemStyle}>
+                            <label className={labelStyle}>Replaced owner address</label>
+                            <input
+                              {...input}
+                              className={`${inputStyle} ${meta.error ? 'text-red-500' : ''}`}
+                            />
+                          </div>
+                          {meta.error && (
+                            <div className="text-right text-red-500 m-1">{meta.error}</div>
+                          )}
+                        </div>
+                      )}
+                    </Field>
+                  </li>
+                )}
+              </ul>
+              <button
+                disabled={!canSubmit(values, errors as FormErrors) || submitting}
+                className="btn-primary block mx-auto"
+                type="submit"
+              >
+                Submit
+              </button>
+            </form>
+          </>
+        )}
+      />
     </Modal>
   );
 };

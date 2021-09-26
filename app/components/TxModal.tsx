@@ -137,10 +137,7 @@ export const TxModal = ({ address }) => {
           )}
         </ul>
         {method && (
-          <button
-            className="mx-auto block bg-gradient-to-r from-green-400 to-blue-500 px-3 py-2 text-white font-semibold rounded"
-            onClick={sendTx}
-          >
+          <button className="btn-primary block mx-auto" onClick={sendTx}>
             Submit
           </button>
         )}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { FC, MouseEvent, useState } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { useRouter } from 'next/router';
@@ -6,27 +6,51 @@ import { Contract } from '@ethersproject/contracts';
 import { abi as factoryAbi } from 'abi/MultiSigWalletFactory.json';
 import { config } from 'config';
 import { bytesAreSafe } from '../utils';
+import { isAddress } from '@ethersproject/address';
+import { Form, Field } from 'react-final-form';
+import arrayMutators from 'final-form-arrays';
+import { FieldArray } from 'react-final-form-arrays';
+import { FORM_ERROR } from 'final-form';
 
-export const SetOrDeployMultisig = ({ address }: { address?: string }) => {
+interface FormValues {
+  nConfirms: number;
+  owners: string[];
+}
+
+interface FormErrors {
+  nConfirms?: string;
+  owners: string[];
+}
+
+interface SetOrDeployMultisigProps {
+  address?: string;
+}
+
+export const SetOrDeployMultisig: FC<SetOrDeployMultisigProps> = ({ address }) => {
   const { library, chainId } = useWeb3React<Web3Provider>();
-  const [error, setError] = useState('');
   const [inputAddress, setInputAddress] = useState('');
-  const [nOwnerInputs, setNOwnerInputs] = useState(1);
-  const [owners, setOwners] = useState<{ address: string; isValid: boolean }[]>([]);
-  const [nConfirmations, setNConfirmations] = useState(1);
   const router = useRouter();
 
-  const openMultisig = (e) => {
+  const openMultisig = (e: MouseEvent) => {
     e.preventDefault();
     router.push(`/wallet/${inputAddress}`);
   };
 
-  const deployMultisig = async (e) => {
-    e.preventDefault();
+  const canSubmit = (values: FormValues, errors: FormErrors) => {
+    const hasValues =
+      values.nConfirms &&
+      values.owners.reduce((prevOwner, curOwner) => prevOwner && Boolean(curOwner?.length), true);
+    const hasErrors = Boolean(
+      errors.nConfirms?.length || errors.owners.some((owner) => Boolean(owner))
+    );
+
+    return hasValues && !hasErrors;
+  };
+
+  const deployMultisig = async ({ owners, nConfirms }: FormValues) => {
     try {
       const factory = new Contract(config.networks[chainId].multisigFactoryAddress, factoryAbi);
-      const ownerAddresses = owners.map((owner) => owner.address);
-      const tx = await factory.connect(library.getSigner()).create(ownerAddresses, nConfirmations);
+      const tx = await factory.connect(library.getSigner()).create(owners, nConfirms);
       const receipt = await tx.wait();
       const log = factory.interface.parseLog(
         receipt.logs.find(({ topics }) =>
@@ -36,29 +60,18 @@ export const SetOrDeployMultisig = ({ address }: { address?: string }) => {
       console.log('MultiSigWallet instantiated at:', log.args.instantiation);
       router.push(`/wallet/${log.args.instantiation}`);
     } catch (e) {
-      setError(e.message);
+      return { [FORM_ERROR]: e.message };
     }
   };
 
-  const removeOwner = (e) => {
-    e.preventDefault();
-    setOwners(owners.slice(0, nOwnerInputs - 1));
-    setNOwnerInputs(nOwnerInputs - 1);
-  };
-
-  const addOwner = (e) => {
-    e.preventDefault();
-    setNOwnerInputs(nOwnerInputs + 1);
-  };
-
   if (address) return <></>;
+
   return (
     <div className="flex h-full flex-col items-center mt-10">
-      <div className="py-2 px-3 rounded-t bg-gradient-to-r w-1/2 from-purple-400 to-red-500 font-semibold text-white">
+      <div className="w-full py-2 px-3 rounded-t bg-gradient-to-r lg:w-1/2 from-purple-400 to-red-500 font-semibold text-white">
         <h2>OG Gnosis Multisig on OVM</h2>
       </div>
-      <div className="bg-gray-200 w-1/2 p-5">
-        {error && <div>{error}</div>}
+      <div className="w-full bg-gray-200 lg:w-1/2 p-5">
         <div>
           <form>
             <label>Enter multisig contract address:</label>
@@ -66,10 +79,7 @@ export const SetOrDeployMultisig = ({ address }: { address?: string }) => {
               className="block m-2 p-2 w-5/6 font-mono mx-auto"
               onChange={(e) => setInputAddress(e.target.value)}
             />
-            <button
-              className="block bg-gradient-to-r from-green-400 to-blue-500 px-3 py-2 text-white text-sm font-semibold rounded mx-auto"
-              onClick={openMultisig}
-            >
+            <button className="btn-primary block mx-auto text-sm" onClick={openMultisig}>
               Open Multisig
             </button>
           </form>
@@ -77,76 +87,142 @@ export const SetOrDeployMultisig = ({ address }: { address?: string }) => {
         <div className="mx-auto my-5 text-center">- or -</div>
         <div>
           Create multisig:
-          <form className="">
-            <ul className="block mx-auto">
-              {[...Array(nOwnerInputs).keys()].map((n) => {
-                const isInvalid = owners[n]?.isValid === false;
-                return (
-                  <li key={n} className="my-1 p-2 w-5/6 mx-auto">
-                    <label className="text-sm text-gray-600">Owner {n + 1}:</label>
-                    <input
-                      className={`font-mono w-full my-1 mx-2 p-1 ${
-                        isInvalid ? 'border border-red-700 text-red-700' : ''
-                      }`}
-                      onChange={(e) => {
-                        const ownerArr = owners;
-                        ownerArr[n] = { address: e.target.value, isValid: true };
-                        return setOwners([...ownerArr]);
-                      }}
-                      onBlur={(e) => {
-                        if (!owners[n]?.address) return;
-                        if (!bytesAreSafe(owners[n].address)) {
-                          const ownerArr = owners;
-                          ownerArr[n].isValid = false;
-                          return setOwners([...ownerArr]);
-                        }
-                      }}
-                    />
-                    {isInvalid && (
-                      <p className="text-red-800 text-sm mx-2">
-                        This address contains a byte sequence that is unsafe as an OVM constructor
-                        parameter. Please remove the address here and add it to the multisig after
-                        it is deployed.
-                      </p>
-                    )}
-                  </li>
-                );
-              })}
-              <li className="text-center">
-                {nOwnerInputs > 1 && (
-                  <button
-                    className="bg-gray-200 text-red-500 border border-red-300 px-1 text-sm rounded mr-2"
-                    onClick={removeOwner}
-                  >
-                    - Remove Owner
-                  </button>
+          <Form
+            onSubmit={deployMultisig}
+            initialValues={{
+              owners: [''],
+              nConfirms: 1,
+            }}
+            mutators={{
+              ...arrayMutators,
+            }}
+            validate={({ owners, nConfirms }: FormValues) => {
+              const errors: FormErrors = {
+                owners: [],
+              };
+
+              if (nConfirms < 1) {
+                errors.nConfirms = 'Signature requirement must be at least 1';
+              } else if (owners.length && nConfirms > owners.length) {
+                errors.nConfirms = 'Cannot require more signatures than owners';
+              }
+
+              owners.forEach((owner, index) => {
+                if (!owner?.length) return;
+
+                if (!isAddress(owner)) {
+                  errors.owners[index] = 'Please enter a valid address';
+                } else if (!bytesAreSafe(owner)) {
+                  errors.owners[index] =
+                    'This address contains a byte sequence that is unsafe as an OVM constructor parameter. Please remove the address here and add it to the multisig after it is deployed.';
+                } else if (
+                  owners.length -
+                    owners.map((o) => o.toUpperCase()).filter((o) => o !== owner.toUpperCase())
+                      .length >
+                  1
+                ) {
+                  errors.owners[index] = 'Owner addresses must be unique';
+                }
+              });
+
+              return errors;
+            }}
+            render={({
+              handleSubmit,
+              form: {
+                mutators: { push, pop },
+              },
+              errors,
+              submitting,
+              submitError,
+              values,
+            }) => (
+              <>
+                {Boolean(submitError) && (
+                  <div className="bg-red-100 border border-red-500 text-red-500 p-3 m-5">
+                    {submitError}
+                  </div>
                 )}
-                <button
-                  className="bg-gray-200 text-gray-500 border border-gray-300 px-1 text-sm rounded"
-                  onClick={addOwner}
-                >
-                  + Add Additional Owner
-                </button>
-              </li>
-              <li className="m-2 p-2 w-5/6 mx-auto">
-                <label className="text-sm text-gray-500 p-1">
-                  # signatures required per transaction:
-                </label>
-                <input
-                  className="block p-1 m-2"
-                  type="number"
-                  value={nConfirmations}
-                  onChange={(e) => setNConfirmations(parseInt(e.target.value))}
-                />
-              </li>
-            </ul>
-            <button
-              className="block bg-gradient-to-r from-green-400 to-blue-500 px-3 py-2 text-white text-sm font-semibold rounded mx-auto"
-              onClick={deployMultisig}
-            >
-              Deploy Multisig
-            </button>
-          </form>
+                <form onSubmit={handleSubmit}>
+                  <ul className="block mx-auto">
+                    <FieldArray name="owners">
+                      {({ fields }) =>
+                        fields.map((address, index) => (
+                          <li key={address} className="my-1 p-2 md:w-5/6 mx-auto">
+                            <Field name={address} parse={(value) => String(value)}>
+                              {({ input, meta }) => (
+                                <>
+                                  <label className="text-sm text-gray-600">
+                                    Owner {index + 1}:
+                                  </label>
+                                  <input
+                                    {...input}
+                                    type="text"
+                                    className={`font-mono w-full my-1 p-1 ${
+                                      meta.error ? 'border border-red-500' : ''
+                                    }`}
+                                  />
+                                  {meta.error && (
+                                    <div className="text-red-500 m-1">{meta.error}</div>
+                                  )}
+                                </>
+                              )}
+                            </Field>
+                          </li>
+                        ))
+                      }
+                    </FieldArray>
+                    <li className="text-center">
+                      {values.owners.length > 1 && (
+                        <button
+                          type="button"
+                          className="bg-gray-200 text-red-500 border border-red-300 px-1 text-sm rounded mr-2"
+                          onClick={() => pop('owners')}
+                        >
+                          - Remove Owner
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="bg-gray-200 text-gray-500 border border-gray-300 px-1 text-sm rounded"
+                        onClick={() => push('owners', '')}
+                      >
+                        + Add Additional Owner
+                      </button>
+                    </li>
+                    <li className="m-2 p-2 md:w-5/6 mx-auto">
+                      <Field name="nConfirms" parse={(value) => Number.parseInt(value)}>
+                        {({ input, meta }) => (
+                          <>
+                            <label className="text-sm text-gray-500 p-1">
+                              # signatures required per transaction:
+                            </label>
+                            <input
+                              {...input}
+                              className={`block my-1 p-1 w-full md:w-44 ${
+                                meta.error ? 'border border-red-500' : ''
+                              }`}
+                              type="number"
+                              min={1}
+                              max={values.owners?.length ?? 1}
+                            />
+                            {meta.error && <div className="text-red-500 m-1">{meta.error}</div>}
+                          </>
+                        )}
+                      </Field>
+                    </li>
+                  </ul>
+                  <button
+                    className="btn-primary block mx-auto text-sm"
+                    type="submit"
+                    disabled={!canSubmit(values, errors as FormErrors) || submitting}
+                  >
+                    Deploy Multisig
+                  </button>
+                </form>
+              </>
+            )}
+          />
         </div>
       </div>
     </div>

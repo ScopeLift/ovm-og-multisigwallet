@@ -5,3 +5,7 @@
 html {
   /* @apply bg-gray-800; */
 }
+
+.btn-primary {
+  @apply bg-gradient-to-r from-green-400 to-blue-500 px-3 py-2 text-white font-semibold rounded disabled:bg-none disabled:bg-gray-500 disabled:opacity-50 disabled:text-gray-300 disabled:cursor-not-allowed;
+}

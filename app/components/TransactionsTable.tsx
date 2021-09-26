@@ -59,10 +59,7 @@ export const TransactionTable = ({ address }) => {
       <div className="flex items-center my-5">
         <h2 className="block text-xl mr-2">Transactions</h2>
         <div>
-          <button
-            className="bg-gradient-to-r from-green-400 to-blue-500 px-3 py-2 text-white text-sm font-semibold rounded"
-            onClick={addNewTx}
-          >
+          <button className="btn-primary" onClick={addNewTx}>
             Add new transaction
           </button>
         </div>
