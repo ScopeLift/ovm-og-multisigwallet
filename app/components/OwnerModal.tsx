@@ -38,40 +38,14 @@ export const ReplaceOwnerModal: FC<ReplaceOwnerModalProps> = ({ address, ownerTo
 );
 
 export const OwnerModal: FC<OwnerModalProps> = ({ address, addOrReplace, ownerToBeReplaced }) => {
-  const { library } = useWeb3React<Web3Provider>();
-  const { owners } = useContext(OwnersContext);
+  const { owners, addOwner, replaceOwner } = useContext(OwnersContext);
   const { clearModal } = useContext(ModalContext);
-  const contract = new Contract(address, multisigAbi);
 
   const canSubmit = (values: FormValues, errors: FormErrors) => {
     const hasValues = values.newOwnerAddress.length;
     const hasErrors = Boolean(Object.keys(errors).length);
 
     return hasValues && !hasErrors;
-  };
-
-  const addOwner = async (owner: string) => {
-    const tx = await contract
-      .connect(library.getSigner())
-      .submitTransaction(
-        contract.address,
-        0,
-        contract.interface.encodeFunctionData('addOwner', [owner])
-      );
-    const receipt = await tx.wait();
-    return receipt;
-  };
-
-  const replaceOwner = async (owner: string, newOwner: string) => {
-    const tx = await contract
-      .connect(library.getSigner())
-      .submitTransaction(
-        contract.address,
-        0,
-        contract.interface.encodeFunctionData('replaceOwner', [owner, newOwner])
-      );
-    const receipt = await tx.wait();
-    return receipt;
   };
 
   const sendTx = async ({ newOwnerAddress }: FormValues) => {

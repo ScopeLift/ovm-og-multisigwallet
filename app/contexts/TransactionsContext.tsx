@@ -1,13 +1,10 @@
 import { isAddress } from '@ethersproject/address';
 import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React } from '@web3-react/core';
-import { abi } from 'abi/MultiSigWallet.json';
-import { ModalContext } from 'components/Modal';
-import { ToastContext } from 'components/Toast';
-import { TxModal } from 'components/TxModal';
+import { abi as multisigAbi } from 'abi/MultiSigWallet.json';
 import { Contract } from 'ethers';
 import { useRouter } from 'next/router';
-import React, { createContext, FC, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, FC, useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 import { fetcher } from 'utils/fetcher';
 
@@ -23,9 +20,14 @@ type TransactionsContextType = {
   isLoading: boolean;
   transactions: Transaction[];
   updateTransactions: (tx: Transaction) => void;
-  addNewTx: () => void;
-  confirmTx: (transactionId: number) => void;
-  revokeConfirmation: (transactionId: number) => void;
+  addNewTx: (
+    destination: string,
+    abi: string,
+    method: string,
+    args: Record<string, unknown>
+  ) => Promise<unknown>;
+  confirmTx: (transactionId: number) => Promise<unknown>;
+  revokeConfirmation: (transactionId: number) => Promise<unknown>;
 };
 
 export const TransactionsContext = createContext({} as TransactionsContextType);
@@ -35,18 +37,16 @@ export const TransactionsProvider: FC = ({ children }) => {
   const address = query.address as string;
   const [transactions, setTransactions] = useState<Transaction[]>();
   const { library, account, chainId } = useWeb3React<Web3Provider>();
-  const { setModalContent, setModalVisible } = useContext(ModalContext);
-  const { setToast } = useContext(ToastContext);
 
   const contract = useMemo(
-    () => (address && isAddress(address) ? new Contract(address, abi) : null),
+    () => (address && isAddress(address) ? new Contract(address, multisigAbi) : null),
     [address]
   );
 
   const { data: transactionCount, mutate } = useSWR(
     library ? [address, 'transactionCount'] : null,
     {
-      fetcher: fetcher(library, abi),
+      fetcher: fetcher(library, multisigAbi),
     }
   );
   const parsedTxCount = useMemo(
@@ -89,53 +89,40 @@ export const TransactionsProvider: FC = ({ children }) => {
     );
   };
 
-  const addNewTx = () => {
-    if (!account)
-      return setToast({
-        type: 'error',
-        content: 'Please connect your wallet before you add a transaction.',
-        timeout: 5000,
-      });
-    setModalContent(<TxModal address={address} />);
-    setModalVisible(true);
+  const addNewTx = async (
+    destination: string,
+    abi: string,
+    method: string,
+    args: Record<string, unknown>
+  ) => {
+    const destinationContract = new Contract(destination, abi);
+    const inputs = JSON.parse(abi)
+      .filter((entry) => entry.type === 'function')
+      .find((entry) => entry.name === method).inputs;
+    const tx = await contract
+      ?.connect(library.getSigner())
+      ?.submitTransaction(
+        destinationContract.address,
+        0,
+        destinationContract.interface.encodeFunctionData(
+          method,
+          inputs ? inputs.map((input) => args[input.name]) : undefined
+        )
+      );
+    const receipt = await tx.wait();
+    return receipt;
   };
 
   const confirmTx = async (transactionId: number) => {
-    if (!account)
-      return setToast({
-        type: 'error',
-        content: 'Please connect your wallet before you confirm a transaction.',
-        timeout: 5000,
-      });
-    try {
-      const tx = await contract?.connect(library.getSigner()).confirmTransaction(transactionId);
-      await tx.wait();
-    } catch (e) {
-      setToast({
-        type: 'error',
-        content: e.message,
-        timeout: 5000,
-      });
-    }
+    const tx = await contract?.connect(library.getSigner())?.confirmTransaction(transactionId);
+    const receipt = await tx.wait();
+    return receipt;
   };
 
   const revokeConfirmation = async (transactionId: number) => {
-    if (!account)
-      return setToast({
-        type: 'error',
-        content: 'Please connect your wallet before you revoke a confirmation.',
-        timeout: 5000,
-      });
-    try {
-      const tx = await contract?.connect(library.getSigner()).revokeConfirmation(transactionId);
-      await tx.wait();
-    } catch (e) {
-      setToast({
-        type: 'error',
-        content: e.message,
-        timeout: 5000,
-      });
-    }
+    const tx = await contract?.connect(library.getSigner())?.revokeConfirmation(transactionId);
+    const receipt = await tx.wait();
+    return receipt;
   };
 
   const isLoading = useMemo(() => typeof transactions === 'undefined', [transactions]);

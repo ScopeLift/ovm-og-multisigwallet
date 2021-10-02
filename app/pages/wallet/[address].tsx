@@ -32,7 +32,7 @@ const WalletPage: NextPage = () => {
       <div key={chainId}>
         <MultisigInfo address={address} />
         <TransactionsTable account={account} address={address} />
-        <OwnersTable />
+        <OwnersTable account={account} address={address} />
       </div>
     );
   }

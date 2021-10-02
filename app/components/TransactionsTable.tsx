@@ -6,6 +6,8 @@ import { ClickableAddress } from './ClickableAddress';
 import { ModalContext } from './Modal';
 import { TransactionDataModal } from './TransactionDataModal';
 import { OwnersContext } from 'contexts/OwnersContext';
+import { ToastContext } from './Toast';
+import { TxModal } from './TxModal';
 
 interface TransactionsTableProps {
   account: string;
@@ -14,14 +16,48 @@ interface TransactionsTableProps {
 
 export const TransactionsTable: FC<TransactionsTableProps> = ({ account, address }) => {
   const { isAccountOwner } = useContext(OwnersContext);
-  const { transactions, addNewTx, confirmTx, revokeConfirmation } = useContext(TransactionsContext);
+  const { transactions, confirmTx, revokeConfirmation } = useContext(TransactionsContext);
   const { setModal } = useContext(ModalContext);
+  const { setToast } = useContext(ToastContext);
+
+  const showAddNewTxModal = () => {
+    if (!account)
+      return setToast({
+        type: 'error',
+        content: 'Please connect your wallet before you add a transaction.',
+        timeout: 5000,
+      });
+
+    setModal({ content: <TxModal address={address} /> });
+  };
 
   const showTransactionDataModal = (txId: number, data: string) => {
     setModal({
       content: <TransactionDataModal txId={txId} data={data} />,
       styleClass: 'sm:w-full',
     });
+  };
+
+  const tryConfirmTx = (transactionId: number) => {
+    if (!account)
+      return setToast({
+        type: 'error',
+        content: 'Please connect your wallet before you confirm a transaction.',
+        timeout: 5000,
+      });
+
+    confirmTx(transactionId);
+  };
+
+  const tryRevokeConfirmation = (transactionId: number) => {
+    if (!account)
+      return setToast({
+        type: 'error',
+        content: 'Please connect your wallet before you revoke a confirmation.',
+        timeout: 5000,
+      });
+
+    revokeConfirmation(transactionId);
   };
 
   const columns = React.useMemo(
@@ -87,14 +123,14 @@ export const TransactionsTable: FC<TransactionsTableProps> = ({ account, address
                 (!value?.includes(account) ? (
                   <button
                     className="text-sm border border-gray-400 rounded px-2 ml-2"
-                    onClick={() => confirmTx(id)}
+                    onClick={() => tryConfirmTx(id)}
                   >
                     Sign
                   </button>
                 ) : (
                   <button
                     className="text-sm border border-gray-400 rounded px-2 ml-2"
-                    onClick={() => revokeConfirmation(id)}
+                    onClick={() => tryRevokeConfirmation(id)}
                   >
                     Revoke
                   </button>
@@ -161,7 +197,7 @@ export const TransactionsTable: FC<TransactionsTableProps> = ({ account, address
       <div className="flex items-center my-5">
         <h2 className="block text-xl mr-2">Transactions</h2>
         {isAccountOwner && (
-          <button className="btn-primary" onClick={addNewTx}>
+          <button className="btn-primary" onClick={() => showAddNewTxModal()}>
             Add Transaction
           </button>
         )}
