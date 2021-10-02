@@ -1,9 +1,5 @@
 import { FC, useContext } from 'react';
-import { useWeb3React } from '@web3-react/core';
-import { Web3Provider } from '@ethersproject/providers';
-import { Contract } from '@ethersproject/contracts';
 import { Modal, ModalContext } from 'components/Modal';
-import { abi as multisigAbi } from 'abi/MultiSigWallet.json';
 import { CloseIcon } from 'components/Images';
 import { Form, Field } from 'react-final-form';
 import { FORM_ERROR } from 'final-form';
@@ -23,28 +19,14 @@ interface ConfirmsModalProps {
 }
 
 export const ConfirmsModal: FC<ConfirmsModalProps> = ({ address, currentConfirmations }) => {
-  const { library } = useWeb3React<Web3Provider>();
-  const { owners } = useContext(OwnersContext);
+  const { owners, changeRequirement } = useContext(OwnersContext);
   const { clearModal } = useContext(ModalContext);
-  const contract = new Contract(address, multisigAbi);
 
   const canSubmit = (values: FormValues, errors: FormErrors) => {
     const hasValues = values.nConfirms && values.nConfirms !== currentConfirmations;
     const hasErrors = Boolean(Object.keys(errors).length);
 
     return hasValues && !hasErrors;
-  };
-
-  const changeRequirement = async (nConfirms: number) => {
-    const tx = await contract
-      .connect(library.getSigner())
-      .submitTransaction(
-        contract.address,
-        0,
-        contract.interface.encodeFunctionData('changeRequirement', [nConfirms])
-      );
-    const receipt = await tx.wait();
-    return receipt;
   };
 
   const sendTx = async ({ nConfirms }: FormValues) => {

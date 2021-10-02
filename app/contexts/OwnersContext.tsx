@@ -15,6 +15,7 @@ type OwnersContextType = {
   addOwner: (owner: string) => Promise<unknown>;
   replaceOwner: (owner: string, newOwner: string) => Promise<unknown>;
   removeOwner: (owner: string) => Promise<unknown>;
+  changeRequirement: (nConfirms: number) => Promise<unknown>;
 };
 
 export const OwnersContext = createContext({} as OwnersContextType);
@@ -100,11 +101,31 @@ export const OwnersProvider: FC = ({ children }) => {
     return receipt;
   };
 
+  const changeRequirement = async (nConfirms: number) => {
+    const tx = await contract
+      ?.connect(library.getSigner())
+      ?.submitTransaction(
+        contract.address,
+        0,
+        contract.interface.encodeFunctionData('changeRequirement', [nConfirms])
+      );
+    const receipt = await tx.wait();
+    return receipt;
+  };
+
   const isLoading = useMemo(() => typeof owners === 'undefined', [owners]);
 
   return (
     <OwnersContext.Provider
-      value={{ isLoading, owners, isAccountOwner, addOwner, replaceOwner, removeOwner }}
+      value={{
+        isLoading,
+        owners,
+        isAccountOwner,
+        addOwner,
+        replaceOwner,
+        removeOwner,
+        changeRequirement,
+      }}
     >
       {children}
     </OwnersContext.Provider>
