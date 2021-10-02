@@ -1,3 +1,4 @@
+import { isAddress } from '@ethersproject/address';
 import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React } from '@web3-react/core';
 import { abi } from 'abi/MultiSigWallet.json';
@@ -5,8 +6,8 @@ import { ModalContext } from 'components/Modal';
 import { ToastContext } from 'components/Toast';
 import { TxModal } from 'components/TxModal';
 import { Contract } from 'ethers';
-import router from 'next/router';
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/router';
+import React, { createContext, FC, useContext, useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 import { fetcher } from 'utils/fetcher';
 
@@ -19,6 +20,7 @@ export type Transaction = {
 };
 
 type TransactionsContextType = {
+  isLoading: boolean;
   transactions: Transaction[];
   updateTransactions: (tx: Transaction) => void;
   addNewTx: () => void;
@@ -28,15 +30,25 @@ type TransactionsContextType = {
 
 export const TransactionsContext = createContext({} as TransactionsContextType);
 
-export const TransactionsProvider = ({ children }) => {
+export const TransactionsProvider: FC = ({ children }) => {
+  const { query } = useRouter();
+  const address = query.address as string;
   const [transactions, setTransactions] = useState<Transaction[]>();
-  const address = router.query.address as string;
   const { library, account, chainId } = useWeb3React<Web3Provider>();
   const { setModalContent, setModalVisible } = useContext(ModalContext);
   const { setToast } = useContext(ToastContext);
-  let { data: transactionCount, mutate } = useSWR(library ? [address, 'transactionCount'] : null, {
-    fetcher: fetcher(library, abi),
-  });
+
+  const contract = useMemo(
+    () => (address && isAddress(address) ? new Contract(address, abi) : null),
+    [address]
+  );
+
+  const { data: transactionCount, mutate } = useSWR(
+    library ? [address, 'transactionCount'] : null,
+    {
+      fetcher: fetcher(library, abi),
+    }
+  );
   const parsedTxCount = useMemo(
     () => (transactionCount ? parseInt(transactionCount.toString()) : 0),
     [transactionCount]
@@ -57,10 +69,8 @@ export const TransactionsProvider = ({ children }) => {
     mutate(undefined, true);
   }, [chainId]);
 
-  const contract = new Contract(address, abi);
-
   useEffect(() => {
-    if (!library) return;
+    if (!contract || !library) return;
 
     const submission = contract.filters.Submission(null);
 
@@ -71,7 +81,7 @@ export const TransactionsProvider = ({ children }) => {
     return () => {
       library.removeAllListeners(submission);
     };
-  }, [library]);
+  }, [contract, library]);
 
   const updateTransactions = (tx: Transaction) => {
     setTransactions(
@@ -98,7 +108,7 @@ export const TransactionsProvider = ({ children }) => {
         timeout: 5000,
       });
     try {
-      const tx = await contract.connect(library.getSigner()).confirmTransaction(transactionId);
+      const tx = await contract?.connect(library.getSigner()).confirmTransaction(transactionId);
       await tx.wait();
     } catch (e) {
       setToast({
@@ -117,7 +127,7 @@ export const TransactionsProvider = ({ children }) => {
         timeout: 5000,
       });
     try {
-      const tx = await contract.connect(library.getSigner()).revokeConfirmation(transactionId);
+      const tx = await contract?.connect(library.getSigner()).revokeConfirmation(transactionId);
       await tx.wait();
     } catch (e) {
       setToast({
@@ -128,9 +138,12 @@ export const TransactionsProvider = ({ children }) => {
     }
   };
 
+  const isLoading = useMemo(() => typeof transactions === 'undefined', [transactions]);
+
   return (
     <TransactionsContext.Provider
       value={{
+        isLoading,
         transactions,
         updateTransactions,
         addNewTx,

@@ -1,14 +1,13 @@
-import { FC, useEffect, useState, useContext } from 'react';
+import { FC, useContext } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { Modal, ModalContext } from 'components/Modal';
 import { abi as multisigAbi } from 'abi/MultiSigWallet.json';
 import { CloseIcon } from 'components/Images';
-import useSWR from 'swr';
-import { fetcher } from 'utils/fetcher';
 import { Form, Field } from 'react-final-form';
 import { FORM_ERROR } from 'final-form';
+import { OwnersContext } from 'contexts/OwnersContext';
 
 interface FormValues {
   nConfirms: number;
@@ -25,21 +24,9 @@ interface ConfirmsModalProps {
 
 export const ConfirmsModal: FC<ConfirmsModalProps> = ({ address, currentConfirmations }) => {
   const { library } = useWeb3React<Web3Provider>();
+  const { owners } = useContext(OwnersContext);
   const { clearModal } = useContext(ModalContext);
   const contract = new Contract(address, multisigAbi);
-  const {
-    data: owners,
-    mutate,
-  }: {
-    data?: string[];
-    mutate: Function;
-  } = useSWR(library ? [address, 'getOwners'] : null, {
-    fetcher: fetcher(library, multisigAbi),
-  });
-
-  useEffect(() => {
-    mutate(undefined, true);
-  }, []);
 
   const canSubmit = (values: FormValues, errors: FormErrors) => {
     const hasValues = values.nConfirms && values.nConfirms !== currentConfirmations;

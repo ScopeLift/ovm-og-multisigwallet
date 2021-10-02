@@ -1,18 +1,19 @@
 import React, { FC, useContext } from 'react';
-import { useTable, useSortBy, Column, usePagination, TableState } from 'react-table';
+import { useTable, useSortBy, Column, usePagination } from 'react-table';
 import { TransactionRow } from 'components/TransactionRow';
 import { TransactionsContext } from 'contexts/TransactionsContext';
-import { Spinner } from './Images';
 import { ClickableAddress } from './ClickableAddress';
 import { ModalContext } from './Modal';
 import { TransactionDataModal } from './TransactionDataModal';
+import { OwnersContext } from 'contexts/OwnersContext';
 
-interface TransactionTableProps {
+interface TransactionsTableProps {
   account: string;
   address: string;
 }
 
-export const TransactionTable: FC<TransactionTableProps> = ({ account, address }) => {
+export const TransactionsTable: FC<TransactionsTableProps> = ({ account, address }) => {
+  const { isAccountOwner } = useContext(OwnersContext);
   const { transactions, addNewTx, confirmTx, revokeConfirmation } = useContext(TransactionsContext);
   const { setModal } = useContext(ModalContext);
 
@@ -33,7 +34,7 @@ export const TransactionTable: FC<TransactionTableProps> = ({ account, address }
         {
           Header: 'Destination',
           accessor: 'address',
-          Cell: ({ value }) => <ClickableAddress address={value} truncate />,
+          Cell: ({ value }) => <ClickableAddress address={value} truncate withJazzicon />,
         },
         {
           Header: 'Data',
@@ -72,21 +73,27 @@ export const TransactionTable: FC<TransactionTableProps> = ({ account, address }
                 <div className="bg-pink-100 rounded p-3 mr-2">{value?.length}</div>
                 <ul>
                   {value?.map((confirmationAddress: string) => (
-                    <ClickableAddress key={confirmationAddress} address={confirmationAddress} />
+                    <ClickableAddress
+                      key={confirmationAddress}
+                      address={confirmationAddress}
+                      truncate
+                      withJazzicon
+                    />
                   ))}
                 </ul>
               </div>
               {status === 'pending' &&
+                isAccountOwner &&
                 (!value?.includes(account) ? (
                   <button
-                    className="text-sm border border-gray-400 rounded px-2"
+                    className="text-sm border border-gray-400 rounded px-2 ml-2"
                     onClick={() => confirmTx(id)}
                   >
                     Sign
                   </button>
                 ) : (
                   <button
-                    className="text-sm border border-gray-400 rounded px-2"
+                    className="text-sm border border-gray-400 rounded px-2 ml-2"
                     onClick={() => revokeConfirmation(id)}
                   >
                     Revoke
@@ -147,19 +154,17 @@ export const TransactionTable: FC<TransactionTableProps> = ({ account, address }
 
   const cellStyle = 'border border-gray-500 p-2';
 
-  if (!transactions) return <Spinner />;
-
-  if (!transactions.length) return <></>;
+  if (!transactions?.length) return <></>;
 
   return (
     <div className="my-10">
       <div className="flex items-center my-5">
         <h2 className="block text-xl mr-2">Transactions</h2>
-        <div>
+        {isAccountOwner && (
           <button className="btn-primary" onClick={addNewTx}>
-            Add new transaction
+            Add Transaction
           </button>
-        </div>
+        )}
       </div>
       <table {...getTableProps()} className="table-auto font-mono border border-gray-500 w-full">
         <thead>

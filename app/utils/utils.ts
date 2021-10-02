@@ -10,3 +10,7 @@ export const openInEtherscan = (address: string, chainId: number) => {
       break;
   }
 };
+
+export const addressToNumber = (address: string) => {
+  return parseInt(address.slice(2, 10), 16);
+};

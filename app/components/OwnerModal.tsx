@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, FC } from 'react';
+import { useContext, FC } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
@@ -8,8 +8,7 @@ import { CloseIcon } from 'components/Images';
 import { isAddress } from '@ethersproject/address';
 import { Form, Field } from 'react-final-form';
 import { FORM_ERROR } from 'final-form';
-import useSWR from 'swr';
-import { fetcher } from 'utils/fetcher';
+import { OwnersContext } from 'contexts/OwnersContext';
 
 interface FormValues {
   newOwnerAddress: string;
@@ -40,21 +39,9 @@ export const ReplaceOwnerModal: FC<ReplaceOwnerModalProps> = ({ address, ownerTo
 
 export const OwnerModal: FC<OwnerModalProps> = ({ address, addOrReplace, ownerToBeReplaced }) => {
   const { library } = useWeb3React<Web3Provider>();
+  const { owners } = useContext(OwnersContext);
   const { clearModal } = useContext(ModalContext);
   const contract = new Contract(address, multisigAbi);
-  const {
-    data: owners,
-    mutate,
-  }: {
-    data?: string[];
-    mutate: Function;
-  } = useSWR(library ? [address, 'getOwners'] : null, {
-    fetcher: fetcher(library, multisigAbi),
-  });
-
-  useEffect(() => {
-    mutate(undefined, true);
-  }, []);
 
   const canSubmit = (values: FormValues, errors: FormErrors) => {
     const hasValues = values.newOwnerAddress.length;
