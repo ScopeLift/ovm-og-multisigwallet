@@ -5,14 +5,15 @@ import { useWeb3React } from '@web3-react/core';
 import { MultisigInfo } from 'components/MultisigInfo';
 import { Owners } from 'components/OwnersTable';
 import { TransactionTable } from 'components/TransactionsTable';
+import { TransactionsProvider } from 'contexts/TransactionsContext';
 import { isAddress } from '@ethersproject/address';
 import { NextPage } from 'next';
 import { Spinner } from 'components/Images';
 
 const WalletPage: NextPage = () => {
-  const { chainId } = useWeb3React<Web3Provider>();
+  const { account, chainId } = useWeb3React<Web3Provider>();
   const router = useRouter();
-  const { address } = router.query;
+  const address = router.query.address as string;
 
   if (typeof address === 'undefined') {
     return (
@@ -26,7 +27,9 @@ const WalletPage: NextPage = () => {
     return (
       <div key={chainId}>
         <MultisigInfo address={address} />
-        <TransactionTable address={address} />
+        <TransactionsProvider>
+          <TransactionTable account={account} address={address} />
+        </TransactionsProvider>
         <Owners address={address} />
       </div>
     );
