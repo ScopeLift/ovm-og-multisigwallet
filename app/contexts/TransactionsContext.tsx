@@ -33,22 +33,35 @@ type TransactionsContextType = {
 export const TransactionsContext = createContext({} as TransactionsContextType);
 
 export const TransactionsProvider: FC = ({ children }) => {
-  const { query } = useRouter();
+  const { query, isReady } = useRouter();
   const address = query.address as string;
-  const [transactions, setTransactions] = useState<Transaction[]>();
-  const { library, account, chainId } = useWeb3React<Web3Provider>();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const { library, chainId, connector } = useWeb3React<Web3Provider>();
+  const supportedChainIds = connector?.supportedChainIds;
 
   const contract = useMemo(
-    () => (address && isAddress(address) ? new Contract(address, multisigAbi) : null),
-    [address]
+    () => (isReady && isAddress(address) ? new Contract(address, multisigAbi) : null),
+    [isReady]
   );
 
-  const { data: transactionCount, mutate } = useSWR(
-    library ? [address, 'transactionCount'] : null,
+  const { data: transactionCount, mutate } = useSWR<number>(
+    library && supportedChainIds?.includes(chainId) ? [address, 'transactionCount'] : null,
     {
       fetcher: fetcher(library, multisigAbi),
     }
   );
+
+  const isLoading = useMemo(
+    () =>
+      !isReady ||
+      (isReady && isAddress(address) && supportedChainIds?.includes(chainId) && !transactionCount),
+    [isReady, transactionCount]
+  );
+
+  useEffect(() => {
+    mutate(undefined, true);
+  }, [chainId]);
+
   const parsedTxCount = useMemo(
     () => (transactionCount ? parseInt(transactionCount.toString()) : 0),
     [transactionCount]
@@ -64,10 +77,6 @@ export const TransactionsProvider: FC = ({ children }) => {
       );
     }
   }, [parsedTxCount]);
-
-  useEffect(() => {
-    mutate(undefined, true);
-  }, [chainId]);
 
   useEffect(() => {
     if (!contract || !library) return;
@@ -124,8 +133,6 @@ export const TransactionsProvider: FC = ({ children }) => {
     const receipt = await tx.wait();
     return receipt;
   };
-
-  const isLoading = useMemo(() => typeof transactions === 'undefined', [transactions]);
 
   return (
     <TransactionsContext.Provider

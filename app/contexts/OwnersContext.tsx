@@ -21,24 +21,29 @@ type OwnersContextType = {
 export const OwnersContext = createContext({} as OwnersContextType);
 
 export const OwnersProvider: FC = ({ children }) => {
-  const { query } = useRouter();
+  const { query, isReady } = useRouter();
   const address = query.address as string;
-  const { library, account, chainId } = useWeb3React<Web3Provider>();
+  const { library, account, chainId, connector } = useWeb3React<Web3Provider>();
+  const supportedChainIds = connector?.supportedChainIds;
 
   const contract = useMemo(
-    () => (address && isAddress(address) ? new Contract(address, multisigAbi) : null),
-    [address]
+    () => (isReady && isAddress(address) ? new Contract(address, multisigAbi) : null),
+    [isReady]
   );
 
-  const {
-    data: owners,
-    mutate,
-  }: {
-    data?: string[];
-    mutate: Function;
-  } = useSWR(library ? [address, 'getOwners'] : null, {
-    fetcher: fetcher(library, multisigAbi),
-  });
+  const { data: owners, mutate } = useSWR<string[]>(
+    library && supportedChainIds?.includes(chainId) ? [address, 'getOwners'] : null,
+    {
+      fetcher: fetcher(library, multisigAbi),
+    }
+  );
+
+  const isLoading = useMemo(
+    () =>
+      !isReady ||
+      (isReady && isAddress(address) && supportedChainIds?.includes(chainId) && !owners),
+    [isReady, owners]
+  );
 
   useEffect(() => {
     mutate(undefined, true);
@@ -112,8 +117,6 @@ export const OwnersProvider: FC = ({ children }) => {
     const receipt = await tx.wait();
     return receipt;
   };
-
-  const isLoading = useMemo(() => typeof owners === 'undefined', [owners]);
 
   return (
     <OwnersContext.Provider
