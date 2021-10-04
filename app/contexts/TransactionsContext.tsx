@@ -36,27 +36,25 @@ export const TransactionsProvider: FC = ({ children }) => {
   const { query, isReady } = useRouter();
   const address = query.address as string;
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const { library, chainId, connector } = useWeb3React<Web3Provider>();
-  const supportedChainIds = connector?.supportedChainIds;
+  const { active, library, chainId, connector, error: web3Error } = useWeb3React<Web3Provider>();
 
   const contract = useMemo(
     () => (isReady && isAddress(address) ? new Contract(address, multisigAbi) : null),
     [isReady]
   );
 
-  const { data: transactionCount, mutate } = useSWR<number>(
-    library && supportedChainIds?.includes(chainId) ? [address, 'transactionCount'] : null,
+  const canFetch = isReady && Boolean(chainId);
+  const shouldFetch =
+    canFetch && isAddress(address) && library && connector?.supportedChainIds?.includes(chainId);
+
+  const { data: transactionCount, mutate, isValidating, error: fetchError } = useSWR<number>(
+    shouldFetch ? [address, 'transactionCount'] : null,
     {
       fetcher: fetcher(library, multisigAbi),
     }
   );
 
-  const isLoading = useMemo(
-    () =>
-      !isReady ||
-      (isReady && isAddress(address) && supportedChainIds?.includes(chainId) && !transactionCount),
-    [isReady, transactionCount]
-  );
+  const isLoading = !web3Error && !fetchError && (!canFetch || (shouldFetch && isValidating));
 
   useEffect(() => {
     mutate(undefined, true);

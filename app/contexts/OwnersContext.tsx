@@ -23,27 +23,32 @@ export const OwnersContext = createContext({} as OwnersContextType);
 export const OwnersProvider: FC = ({ children }) => {
   const { query, isReady } = useRouter();
   const address = query.address as string;
-  const { library, account, chainId, connector } = useWeb3React<Web3Provider>();
-  const supportedChainIds = connector?.supportedChainIds;
+  const {
+    active,
+    library,
+    account,
+    chainId,
+    connector,
+    error: web3Error,
+  } = useWeb3React<Web3Provider>();
 
   const contract = useMemo(
     () => (isReady && isAddress(address) ? new Contract(address, multisigAbi) : null),
     [isReady]
   );
 
-  const { data: owners, mutate } = useSWR<string[]>(
-    library && supportedChainIds?.includes(chainId) ? [address, 'getOwners'] : null,
+  const canFetch = isReady && Boolean(chainId);
+  const shouldFetch =
+    canFetch && isAddress(address) && library && connector?.supportedChainIds?.includes(chainId);
+
+  const { data: owners, mutate, isValidating, error: fetchError } = useSWR<string[]>(
+    shouldFetch ? [address, 'getOwners'] : null,
     {
       fetcher: fetcher(library, multisigAbi),
     }
   );
 
-  const isLoading = useMemo(
-    () =>
-      !isReady ||
-      (isReady && isAddress(address) && supportedChainIds?.includes(chainId) && !owners),
-    [isReady, owners]
-  );
+  const isLoading = !web3Error && !fetchError && (!canFetch || (shouldFetch && isValidating));
 
   useEffect(() => {
     mutate(undefined, true);
