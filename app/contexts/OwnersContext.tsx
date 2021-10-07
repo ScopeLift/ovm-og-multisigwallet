@@ -23,14 +23,7 @@ export const OwnersContext = createContext({} as OwnersContextType);
 export const OwnersProvider: FC = ({ children }) => {
   const { query, isReady } = useRouter();
   const address = query.address as string;
-  const {
-    active,
-    library,
-    account,
-    chainId,
-    connector,
-    error: web3Error,
-  } = useWeb3React<Web3Provider>();
+  const { library, account, chainId, connector, error: web3Error } = useWeb3React<Web3Provider>();
 
   const contract = useMemo(
     () => (isReady && isAddress(address) ? new Contract(address, multisigAbi) : null),

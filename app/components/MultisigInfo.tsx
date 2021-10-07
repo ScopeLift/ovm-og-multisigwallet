@@ -12,7 +12,7 @@ import { ClickableAddress } from './ClickableAddress';
 import { OwnersContext } from 'contexts/OwnersContext';
 
 export const MultisigInfo = ({ address }) => {
-  const { isAccountOwner } = useContext(OwnersContext);
+  const { isAccountOwner, owners } = useContext(OwnersContext);
   const { library, chainId } = useWeb3React<Web3Provider>();
   const { setModal } = useContext(ModalContext);
   const {
@@ -66,7 +66,7 @@ export const MultisigInfo = ({ address }) => {
       </h2>
       <div className="">
         {nConfirms} {nConfirms > 1 ? 'signatures' : 'signature'} needed to execute a transaction{' '}
-        {isAccountOwner && (
+        {isAccountOwner && owners.length > 1 && (
           <button
             className="text-sm rounded border px-2  border-gray-400 bg-gray-100 text-gray-800"
             onClick={showRequirementModal}

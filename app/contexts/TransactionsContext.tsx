@@ -36,7 +36,7 @@ export const TransactionsProvider: FC = ({ children }) => {
   const { query, isReady } = useRouter();
   const address = query.address as string;
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const { active, library, chainId, connector, error: web3Error } = useWeb3React<Web3Provider>();
+  const { library, chainId, connector, error: web3Error } = useWeb3React<Web3Provider>();
 
   const contract = useMemo(
     () => (isReady && isAddress(address) ? new Contract(address, multisigAbi) : null),
@@ -91,8 +91,8 @@ export const TransactionsProvider: FC = ({ children }) => {
   }, [contract, library]);
 
   const updateTransactions = (tx: Transaction) => {
-    setTransactions(
-      transactions.map((transaction) => (tx.id === transaction.id ? tx : transaction))
+    setTransactions((txs) =>
+      txs.map((transaction) => (tx.id === transaction.id ? tx : transaction))
     );
   };
 

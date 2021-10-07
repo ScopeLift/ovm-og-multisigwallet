@@ -178,6 +178,7 @@ export const TransactionsTable: FC<TransactionsTableProps> = ({ account, address
       columns,
       data,
       autoResetPage: false,
+      autoResetSortBy: false,
       disableSortRemove: true,
       initialState: {
         pageSize: 5,
@@ -232,19 +233,26 @@ export const TransactionsTable: FC<TransactionsTableProps> = ({ account, address
         </tbody>
       </table>
       <div className="mt-2 text-right">
-        <select
-          value={pageSize}
-          onChange={({ target: { value } }) => {
-            setPageSize(Number(value));
-          }}
-        >
-          {[5, 7, 10, 25, 'All'].map((pageSize) => (
-            <option key={pageSize} value={pageSize === 'All' ? transactions.length ?? 1 : pageSize}>
-              Show {pageSize}
-            </option>
-          ))}
-        </select>
-        {' | '}
+        {transactions.length > 5 && (
+          <>
+            <select
+              value={pageSize}
+              onChange={({ target: { value } }) => {
+                setPageSize(Number(value));
+              }}
+            >
+              {[5, 7, 10, 25, 'All'].map((pageSize) => (
+                <option
+                  key={pageSize}
+                  value={pageSize === 'All' ? transactions.length ?? 1 : pageSize}
+                >
+                  Show {pageSize}
+                </option>
+              ))}
+            </select>
+            {' | '}
+          </>
+        )}
         {canPreviousPage && (
           <button
             className="mr-3 text-sm border border-gray-300 px-2"
