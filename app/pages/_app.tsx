@@ -5,8 +5,6 @@ import { WithModal } from 'components/Modal';
 import { WithToast, Toast } from 'components/Toast';
 import { Web3Provider } from '@ethersproject/providers';
 import { Web3ReactProvider } from '@web3-react/core';
-import { OwnersProvider } from 'contexts/OwnersContext';
-import { TransactionsProvider } from 'contexts/TransactionsContext';
 
 function getLibrary(provider: any): Web3Provider {
   const library = new Web3Provider(provider);
@@ -28,23 +26,19 @@ const MyApp = ({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <Web3ReactProvider getLibrary={getLibrary}>
-        <TransactionsProvider>
-          <OwnersProvider>
-            <WithModal>
-              <WithToast>
-                <div className="container mx-auto px-2 lg:px-4 pb-4">
-                  <div className="flex items-stretch justify-end mt-2">
-                    <Header />
-                  </div>
-                  <div className="mt-4">
-                    <Toast />
-                    <Component {...pageProps} />
-                  </div>
-                </div>
-              </WithToast>
-            </WithModal>
-          </OwnersProvider>
-        </TransactionsProvider>
+        <WithModal>
+          <WithToast>
+            <div className="container mx-auto px-2 lg:px-4 pb-4">
+              <div className="flex items-stretch justify-end mt-2">
+                <Header />
+              </div>
+              <div className="mt-4">
+                <Toast />
+                <Component {...pageProps} />
+              </div>
+            </div>
+          </WithToast>
+        </WithModal>
       </Web3ReactProvider>
     </>
   );
