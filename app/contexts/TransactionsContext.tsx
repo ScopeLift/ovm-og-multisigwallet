@@ -60,21 +60,16 @@ export const TransactionsProvider: FC = ({ children }) => {
     mutate(undefined, true);
   }, [chainId]);
 
-  const parsedTxCount = useMemo(
-    () => (transactionCount ? parseInt(transactionCount.toString()) : 0),
-    [transactionCount]
-  );
-
   useEffect(() => {
-    if (parsedTxCount) {
-      setTransactions(
-        new Array(parsedTxCount).fill(null).map((_, id) => ({
-          id,
-          address,
-        }))
-      );
-    }
-  }, [parsedTxCount]);
+    if (typeof transactionCount === 'undefined') return;
+
+    setTransactions(
+      new Array(parseInt(transactionCount.toString())).fill(null).map((_, id) => ({
+        id,
+        address,
+      }))
+    );
+  }, [transactionCount]);
 
   useEffect(() => {
     if (!contract || !library) return;
