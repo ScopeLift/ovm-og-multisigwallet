@@ -4,15 +4,15 @@ import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React } from '@web3-react/core';
 import { MultisigInfo } from 'components/MultisigInfo';
 import { OwnersTable } from 'components/OwnersTable';
-import { OwnersContext, OwnersProvider } from 'contexts/OwnersContext';
+import { OwnersContext } from 'contexts/OwnersContext';
 import { TransactionsTable } from 'components/TransactionsTable';
-import { TransactionsContext, TransactionsProvider } from 'contexts/TransactionsContext';
+import { TransactionsContext } from 'contexts/TransactionsContext';
 import { isAddress } from '@ethersproject/address';
 import { NextPage } from 'next';
 import { Spinner } from 'components/Images';
-import { FC, useContext } from 'react';
+import { useContext } from 'react';
 
-const WalletPage: FC = () => {
+const WalletPage: NextPage = () => {
   const { query } = useRouter();
   const address = query.address as string;
   const { account, chainId } = useWeb3React<Web3Provider>();
@@ -50,14 +50,4 @@ const WalletPage: FC = () => {
   );
 };
 
-const WalletPageWrapper: NextPage = () => {
-  return (
-    <TransactionsProvider>
-      <OwnersProvider>
-        <WalletPage />
-      </OwnersProvider>
-    </TransactionsProvider>
-  );
-};
-
-export default WalletPageWrapper;
+export default WalletPage;
