@@ -3,7 +3,7 @@ import { Modal, ModalContext } from 'components/Modal';
 import { CloseIcon } from 'components/Images';
 
 interface TransactionDataModalProps {
-  txId: string;
+  txId: number;
   data: string;
 }
 

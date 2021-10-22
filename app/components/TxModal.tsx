@@ -1,14 +1,11 @@
-import { useState, useEffect, useContext } from 'react';
-import { useWeb3React } from '@web3-react/core';
-import { Web3Provider } from '@ethersproject/providers';
-import { Contract } from '@ethersproject/contracts';
+import React, { useState, useEffect, useContext } from 'react';
 import { Modal, ModalContext } from 'components/Modal';
-import { abi as multisigAbi } from 'abi/MultiSigWallet.json';
 import { CloseIcon } from 'components/Images';
+import { TransactionsContext } from 'contexts/TransactionsContext';
 
 export const TxModal = ({ address }) => {
-  const { library } = useWeb3React<Web3Provider>();
-  const { setModalContent, setModalVisible } = useContext(ModalContext);
+  const { addNewTx } = useContext(TransactionsContext);
+  const { clearModal } = useContext(ModalContext);
   const [destination, setDestination] = useState('');
   const [abi, setAbi] = useState('');
   const [methods, setMethods] = useState([]);
@@ -16,6 +13,7 @@ export const TxModal = ({ address }) => {
   const [params, setParams] = useState([]);
   const [args, setArgs] = useState({});
   const [error, setError] = useState('');
+
   useEffect(() => {
     if (!abi) return;
     try {
@@ -48,27 +46,12 @@ export const TxModal = ({ address }) => {
     });
   };
 
-  const sendTx = async (e) => {
-    e.preventDefault();
+  const sendTx = async (ev: React.MouseEvent) => {
+    ev.preventDefault();
+
     try {
-      const multisig = new Contract(address, multisigAbi);
-      const destinationContract = new Contract(destination, abi);
-      const inputs = JSON.parse(abi)
-        .filter((entry) => entry.type === 'function')
-        .find((entry) => entry.name === method).inputs;
-      const tx = await multisig
-        .connect(library.getSigner())
-        .submitTransaction(
-          destinationContract.address,
-          0,
-          destinationContract.interface.encodeFunctionData(
-            method,
-            inputs ? inputs.map((input) => args[input.name]) : undefined
-          )
-        );
-      const receipt = await tx.wait();
-      setModalVisible(false);
-      setModalContent([]);
+      const receipt = await addNewTx(destination, abi, method, args);
+      clearModal();
       return receipt;
     } catch (e) {
       setError(e.message);
@@ -78,13 +61,14 @@ export const TxModal = ({ address }) => {
   const itemStyle = 'flex justify-between p-4 items-center';
   const inputStyle = 'border border-gray-500 w-4/5 font-mono';
   const labelStyle = 'w-1/5';
+
   return (
     <Modal>
       <div className="flex justify-between w-full bg-gray-200 p-3 font-semibold">
         <h2>Send Transaction</h2>
         <CloseIcon
           className="opacity-50 hover:opacity-80 hover:cursor-pointer"
-          onClick={() => setModalVisible(false)}
+          onClick={() => clearModal()}
         />
       </div>
       {error && (

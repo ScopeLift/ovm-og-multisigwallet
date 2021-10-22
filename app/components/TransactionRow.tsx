@@ -1,19 +1,29 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect, useContext, useMemo, FC } from 'react';
 import useSWR from 'swr';
 import { fetcher } from 'utils/fetcher';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { abi } from 'abi/MultiSigWallet.json';
-import { ToastContext } from 'components/Toast';
-import { ModalContext } from './Modal';
-import { TransactionDataModal } from './TransactionDataModal';
-import { ClickableAddress } from './ClickableAddress';
+import { Transaction, TransactionsContext } from 'contexts/TransactionsContext';
+import { Cell, Row } from 'react-table';
 
-export const TransactionRow = ({ address, transactionId, cellStyle }) => {
-  const { account, library } = useWeb3React<Web3Provider>();
-  const { setModal } = useContext(ModalContext);
-  const { setToast } = useContext(ToastContext);
+interface TransactionRowProps {
+  transactionId: number;
+  address: string;
+  row: Row;
+  cellStyle: string;
+}
+
+export const TransactionRow: FC<TransactionRowProps> = ({
+  transactionId,
+  address,
+  row,
+  cellStyle,
+}) => {
+  const { library } = useWeb3React<Web3Provider>();
+  const { updateTransactions } = useContext(TransactionsContext);
+
   const { data: transaction, mutate } = useSWR(
     library ? [address, 'transactions', transactionId] : null,
     {
@@ -32,10 +42,11 @@ export const TransactionRow = ({ address, transactionId, cellStyle }) => {
       fetcher: fetcher(library, abi),
     }
   );
-  const contract = new Contract(address, abi);
 
   useEffect(() => {
     if (!library) return;
+
+    const contract = new Contract(address, abi);
     const confirmation = contract.filters.Confirmation(null, transactionId);
     const revocation = contract.filters.Revocation(null, transactionId);
     const execution = contract.filters.Execution(transactionId);
@@ -68,102 +79,33 @@ export const TransactionRow = ({ address, transactionId, cellStyle }) => {
     };
   }, [library]);
 
-  const confirmTx = async () => {
-    if (!account)
-      return setToast({
-        type: 'error',
-        content: 'Please connect your wallet before you confirm a transaction.',
-        timeout: 5000,
-      });
-    try {
-      const tx = await contract.connect(library.getSigner()).confirmTransaction(transactionId);
-      await tx.wait();
-    } catch (e) {
-      setToast({
-        type: 'error',
-        content: e.message,
-        timeout: 5000,
-      });
-    }
-  };
+  const tx: Transaction = useMemo(
+    () =>
+      typeof transaction !== 'undefined' &&
+      typeof confirmations !== 'undefined' &&
+      typeof isConfirmed !== 'undefined'
+        ? {
+            id: transactionId,
+            address,
+            data: transaction?.data,
+            confirmations,
+            status: transaction?.executed ? 'executed' : isConfirmed ? 'failed' : 'pending',
+          }
+        : undefined,
+    [transaction, confirmations, isConfirmed]
+  );
 
-  const revokeConfirmation = async () => {
-    if (!account)
-      return setToast({
-        type: 'error',
-        content: 'Please connect your wallet before you revoke a confirmation.',
-        timeout: 5000,
-      });
-    try {
-      const tx = await contract.connect(library.getSigner()).revokeConfirmation(transactionId);
-      await tx.wait();
-    } catch (e) {
-      setToast({
-        type: 'error',
-        content: e.message,
-        timeout: 5000,
-      });
-    }
-  };
+  useEffect(() => {
+    if (tx) updateTransactions(tx);
+  }, [tx]);
 
-  const showTransactionDataModal = (txId: string, data: string) => {
-    setModal({
-      content: <TransactionDataModal txId={txId} data={data} />,
-      styleClass: 'sm:w-full',
-    });
-  };
-
-  if (!transaction || !confirmations) return <tr></tr>;
-  const txStatus = transaction.executed ? 'executed' : isConfirmed ? 'failed' : 'pending';
   return (
-    <tr>
-      <td className={cellStyle}>{transactionId}</td>
-      <td className={cellStyle}>
-        <ClickableAddress address={transaction.destination} truncate />
-      </td>
-      <td className={cellStyle}>
-        <span
-          className="truncate block w-44 hover:underline cursor-pointer"
-          onClick={() => showTransactionDataModal(transactionId, transaction.data)}
-        >
-          {transaction.data}
-        </span>
-      </td>
-      <td className={cellStyle}>
-        <div className="flex flex-row justify-between">
-          <div className="flex flex-row items-center">
-            <div className="bg-pink-100 rounded p-3 mr-2">{confirmations.length}</div>
-            <ul>
-              {confirmations.map((address) => (
-                <ClickableAddress key={address} address={address} />
-              ))}
-            </ul>
-          </div>
-          {txStatus === 'pending' &&
-            (!confirmations.includes(account) ? (
-              <button className="text-sm border border-gray-400 rounded px-2" onClick={confirmTx}>
-                Sign
-              </button>
-            ) : (
-              <button
-                className="text-sm border border-gray-400 rounded px-2"
-                onClick={revokeConfirmation}
-              >
-                Revoke
-              </button>
-            ))}
-        </div>
-      </td>
-      <td className={cellStyle}>
-        {txStatus === 'executed' ? (
-          <span className="text-green-400 mr-1">✔</span>
-        ) : txStatus === 'failed' ? (
-          <span className="text-red-400 mr-1">✕</span>
-        ) : (
-          ''
-        )}
-        <span className="">{txStatus}</span>
-      </td>
+    <tr {...row.getRowProps()}>
+      {row.cells.map((cell: Cell) => (
+        <td className={cellStyle} {...cell.getCellProps()}>
+          {cell.render('Cell')}
+        </td>
+      ))}
     </tr>
   );
 };

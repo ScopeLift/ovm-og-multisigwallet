@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, FC } from 'react';
+import { useContext, FC } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
@@ -8,17 +8,14 @@ import { CloseIcon } from 'components/Images';
 import { isAddress } from '@ethersproject/address';
 import { Form, Field } from 'react-final-form';
 import { FORM_ERROR } from 'final-form';
-import useSWR from 'swr';
-import { fetcher } from 'utils/fetcher';
+import { OwnersContext } from 'contexts/OwnersContext';
 
 interface FormValues {
   newOwnerAddress: string;
-  oldOwnerAddress: string;
 }
 
 interface FormErrors {
   newOwnerAddress?: string;
-  oldOwnerAddress?: string;
 }
 
 interface AddOwnerModalProps {
@@ -41,62 +38,22 @@ export const ReplaceOwnerModal: FC<ReplaceOwnerModalProps> = ({ address, ownerTo
 );
 
 export const OwnerModal: FC<OwnerModalProps> = ({ address, addOrReplace, ownerToBeReplaced }) => {
-  const { library } = useWeb3React<Web3Provider>();
+  const { owners, addOwner, replaceOwner } = useContext(OwnersContext);
   const { clearModal } = useContext(ModalContext);
-  const contract = new Contract(address, multisigAbi);
-  const {
-    data: owners,
-    mutate,
-  }: {
-    data?: string[];
-    mutate: Function;
-  } = useSWR(library ? [address, 'getOwners'] : null, {
-    fetcher: fetcher(library, multisigAbi),
-  });
-
-  useEffect(() => {
-    mutate(undefined, true);
-  }, []);
 
   const canSubmit = (values: FormValues, errors: FormErrors) => {
-    const hasValues =
-      values.newOwnerAddress.length &&
-      (addOrReplace === 'replace' ? values.oldOwnerAddress.length : true);
+    const hasValues = values.newOwnerAddress.length;
     const hasErrors = Boolean(Object.keys(errors).length);
 
     return hasValues && !hasErrors;
   };
 
-  const addOwner = async (owner: string) => {
-    const tx = await contract
-      .connect(library.getSigner())
-      .submitTransaction(
-        contract.address,
-        0,
-        contract.interface.encodeFunctionData('addOwner', [owner])
-      );
-    const receipt = await tx.wait();
-    return receipt;
-  };
-
-  const replaceOwner = async (owner: string, newOwner: string) => {
-    const tx = await contract
-      .connect(library.getSigner())
-      .submitTransaction(
-        contract.address,
-        0,
-        contract.interface.encodeFunctionData('replaceOwner', [owner, newOwner])
-      );
-    const receipt = await tx.wait();
-    return receipt;
-  };
-
-  const sendTx = async ({ newOwnerAddress, oldOwnerAddress }: FormValues) => {
+  const sendTx = async ({ newOwnerAddress }: FormValues) => {
     try {
       const receipt =
         addOrReplace === 'add'
           ? await addOwner(newOwnerAddress)
-          : await replaceOwner(oldOwnerAddress, newOwnerAddress);
+          : await replaceOwner(ownerToBeReplaced, newOwnerAddress);
       clearModal();
       return receipt;
     } catch (e) {
@@ -107,6 +64,10 @@ export const OwnerModal: FC<OwnerModalProps> = ({ address, addOrReplace, ownerTo
   const itemStyle = 'flex justify-between items-center';
   const inputStyle = 'border border-gray-500 w-80 font-mono';
   const labelStyle = '';
+
+  if (addOrReplace === 'replace' && !addOrReplace.length) {
+    return null;
+  }
 
   return (
     <Modal>
@@ -121,9 +82,8 @@ export const OwnerModal: FC<OwnerModalProps> = ({ address, addOrReplace, ownerTo
         onSubmit={sendTx}
         initialValues={{
           newOwnerAddress: '',
-          oldOwnerAddress: ownerToBeReplaced ?? '',
         }}
-        validate={({ newOwnerAddress, oldOwnerAddress }: FormValues) => {
+        validate={({ newOwnerAddress }: FormValues) => {
           const errors: FormErrors = {};
 
           if (newOwnerAddress?.length && !isAddress(newOwnerAddress)) {
@@ -133,17 +93,6 @@ export const OwnerModal: FC<OwnerModalProps> = ({ address, addOrReplace, ownerTo
             owners.some((owner) => owner.toUpperCase() === newOwnerAddress.toUpperCase())
           ) {
             errors.newOwnerAddress = 'This address is already an owner';
-          }
-
-          if (addOrReplace === 'replace') {
-            if (oldOwnerAddress?.length && !isAddress(oldOwnerAddress)) {
-              errors.oldOwnerAddress = 'Please enter a valid address';
-            } else if (
-              oldOwnerAddress?.length &&
-              !owners.some((owner) => owner.toUpperCase() === oldOwnerAddress.toUpperCase())
-            ) {
-              errors.oldOwnerAddress = 'This address is not an owner';
-            }
           }
 
           return errors;
@@ -157,6 +106,16 @@ export const OwnerModal: FC<OwnerModalProps> = ({ address, addOrReplace, ownerTo
             )}
             <form className="pb-5" onSubmit={handleSubmit}>
               <ul>
+                {addOrReplace === 'replace' && (
+                  <li>
+                    <div className="flex-col m-4">
+                      <div className="flex-col">
+                        <div>Replace Owner:</div>
+                        <div>{ownerToBeReplaced}</div>
+                      </div>
+                    </div>
+                  </li>
+                )}
                 <li>
                   <Field name="newOwnerAddress" parse={(value) => String(value)}>
                     {({ input, meta }) => (
@@ -175,26 +134,6 @@ export const OwnerModal: FC<OwnerModalProps> = ({ address, addOrReplace, ownerTo
                     )}
                   </Field>
                 </li>
-                {addOrReplace === 'replace' && (
-                  <li>
-                    <Field name="oldOwnerAddress" parse={(value) => String(value)}>
-                      {({ input, meta }) => (
-                        <div className="flex-col m-4">
-                          <div className={itemStyle}>
-                            <label className={labelStyle}>Replaced owner address</label>
-                            <input
-                              {...input}
-                              className={`${inputStyle} ${meta.error ? 'text-red-500' : ''}`}
-                            />
-                          </div>
-                          {meta.error && (
-                            <div className="text-right text-red-500 m-1">{meta.error}</div>
-                          )}
-                        </div>
-                      )}
-                    </Field>
-                  </li>
-                )}
               </ul>
               <button
                 disabled={!canSubmit(values, errors as FormErrors) || submitting}

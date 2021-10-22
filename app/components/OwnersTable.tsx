@@ -1,132 +1,98 @@
-import React, { useEffect, useContext } from 'react';
-import useSWR from 'swr';
-import { fetcher } from 'utils/fetcher';
-import { useWeb3React } from '@web3-react/core';
-import { Web3Provider } from '@ethersproject/providers';
-import { Contract } from '@ethersproject/contracts';
-import { abi } from 'abi/MultiSigWallet.json';
-import { ModalContext } from 'components/Modal';
-import { ToastContext } from 'components/Toast';
-import { AddOwnerModal, ReplaceOwnerModal } from 'components/OwnerModal';
+import React, { FC, useContext } from 'react';
 import { ClickableAddress } from './ClickableAddress';
+import { OwnersContext } from 'contexts/OwnersContext';
+import { ModalContext } from './Modal';
+import { AddOwnerModal, ReplaceOwnerModal } from './OwnerModal';
+import { ToastContext } from './Toast';
 
-export const Owners = ({ address }) => {
-  const { library, account, chainId } = useWeb3React<Web3Provider>();
-  const { setModalContent, setModalVisible } = useContext(ModalContext);
+interface OwnersTableProps {
+  account: string;
+  address: string;
+}
+
+export const OwnersTable: FC<OwnersTableProps> = ({ account, address }) => {
+  const { owners, isAccountOwner, removeOwner } = useContext(OwnersContext);
+  const { setModal } = useContext(ModalContext);
   const { setToast } = useContext(ToastContext);
-  const {
-    data: owners,
-    mutate,
-  }: {
-    data?: string[];
-    mutate: Function;
-  } = useSWR(library ? [address, 'getOwners'] : null, {
-    fetcher: fetcher(library, abi),
-  });
-  const contract = new Contract(address, abi);
 
-  useEffect(() => {
-    mutate(undefined, true);
-  }, [chainId]);
+  const showAddOwnerModal = () => {
+    if (!account)
+      return setToast({
+        type: 'error',
+        content: 'Please connect your wallet before you manage owners.',
+        timeout: 5000,
+      });
 
-  useEffect(() => {
-    if (!library) return;
-    const addition = contract.filters.OwnerAddition(null);
-    const removal = contract.filters.OwnerRemoval(null);
-    library.on(addition, (event) => {
-      console.log('Owner addition', { event });
-      mutate(undefined, true);
+    setModal({ content: <AddOwnerModal address={address} /> });
+  };
+
+  const showReplaceOwnerModal = (ownerToBeReplaced: string) => {
+    if (!account)
+      return setToast({
+        type: 'error',
+        content: 'Please connect your wallet before you manage owners.',
+        timeout: 5000,
+      });
+
+    setModal({
+      content: <ReplaceOwnerModal address={address} ownerToBeReplaced={ownerToBeReplaced} />,
     });
-    library.on(removal, (owner, event) => {
-      console.log('Owner removal', { event });
-      mutate(undefined, true);
-    });
-    return () => {
-      library.removeAllListeners(addition);
-      library.removeAllListeners(removal);
-    };
-  }, [library]);
+  };
 
-  const addOwner = () => {
+  const tryRemoveOwner = async (owner: string) => {
     if (!account)
       return setToast({
         type: 'error',
         content: 'Please connect your wallet before you manage owners.',
         timeout: 5000,
       });
-    setModalContent(<AddOwnerModal address={address} />);
-    setModalVisible(true);
+
+    removeOwner(owner);
   };
 
-  const replaceOwner = (ownerToBeReplaced) => {
-    if (!account)
-      return setToast({
-        type: 'error',
-        content: 'Please connect your wallet before you manage owners.',
-        timeout: 5000,
-      });
-    setModalContent(<ReplaceOwnerModal address={address} ownerToBeReplaced={ownerToBeReplaced} />);
-    setModalVisible(true);
-  };
-
-  const removeOwner = async (owner: string) => {
-    if (!account)
-      return setToast({
-        type: 'error',
-        content: 'Please connect your wallet before you manage owners.',
-        timeout: 5000,
-      });
-    const tx = await contract
-      .connect(library.getSigner())
-      .submitTransaction(
-        contract.address,
-        0,
-        contract.interface.encodeFunctionData('removeOwner', [owner])
-      );
-    const receipt = await tx.wait();
-    return receipt;
-  };
+  const cellStyle = 'border border-gray-500 p-2';
 
   if (!owners) return <></>;
 
-  const cellStyle = 'border border-gray-500 p-2';
   return (
     <>
       <div className="flex items-center my-5">
         <h2 className="block text-xl mr-2">Owners</h2>
-        <div>
-          <button className="btn-primary" onClick={addOwner}>
-            Add new owner
+        {isAccountOwner && (
+          <button className="btn-primary" onClick={() => showAddOwnerModal()}>
+            Add Owner
           </button>
-        </div>
+        )}
       </div>
       <table className="table-fixed font-mono border border-gray-500">
         <thead>
           <tr>
             <th className={cellStyle}>Owner Address</th>
-            <th className={cellStyle}>Actions</th>
+            {isAccountOwner && <th className={cellStyle}>Actions</th>}
           </tr>
         </thead>
         <tbody>
           {owners.map((owner) => (
             <tr key={owner}>
               <td className={cellStyle}>
-                <ClickableAddress address={owner} />
+                <ClickableAddress address={owner} withJazzicon />
               </td>
-              <td className={cellStyle}>
-                <button
-                  className="px-2 mr-2 font-sans rounded border border-gray-300 text-sm"
-                  onClick={() => replaceOwner(owner)}
-                >
-                  Replace
-                </button>
-                <button
-                  className="px-2 font-sans rounded border border-gray-300 text-sm"
-                  onClick={() => removeOwner(owner)}
-                >
-                  Remove
-                </button>
-              </td>
+              {isAccountOwner && (
+                <td className={cellStyle}>
+                  <button
+                    className="px-2 mr-2 font-sans rounded border border-gray-300 text-sm"
+                    onClick={() => showReplaceOwnerModal(owner)}
+                  >
+                    Replace
+                  </button>
+                  <button
+                    className="px-2 font-sans rounded border border-gray-300 text-sm"
+                    onClick={() => tryRemoveOwner(owner)}
+                  >
+                    Remove
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

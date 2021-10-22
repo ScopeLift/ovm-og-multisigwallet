@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef } from 'react';
 import { truncateAddress } from 'utils/truncate';
-import jazzicon from '@metamask/jazzicon';
+import Jazzicon from './Jazzicon';
 
 interface ConnectionProps {
   active: boolean;
@@ -15,20 +15,6 @@ export const Connection: FC<ConnectionProps> = ({
   activatingConnector,
   showConnectionModal,
 }) => {
-  const jazziconRef = useRef<HTMLDivElement>();
-
-  useEffect(() => {
-    if (!account || !jazziconRef.current || jazziconRef.current.childElementCount) return;
-
-    const accountjazziconID = account
-      .slice(2)
-      .split('')
-      .map((char) => char.charCodeAt(0))
-      .reduce((prev, cur) => prev + cur, 0);
-    const jazziconEl = jazzicon(16, accountjazziconID);
-    jazziconRef.current?.appendChild(jazziconEl);
-  }, [account]);
-
   return (
     <button
       className="flex items-center ml-4 p-1 rounded border-2 border-gray-100"
@@ -41,7 +27,7 @@ export const Connection: FC<ConnectionProps> = ({
       ) : (
         'Connect Wallet'
       )}
-      <div className="ml-2" ref={jazziconRef} />
+      <Jazzicon address={account} />
     </button>
   );
 };
