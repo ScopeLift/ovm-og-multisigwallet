@@ -63,12 +63,23 @@ export const TransactionsProvider: FC = ({ children }) => {
   useEffect(() => {
     if (typeof transactionCount === 'undefined') return;
 
-    setTransactions(
-      new Array(parseInt(transactionCount.toString())).fill(null).map((_, id) => ({
-        id,
-        address,
-      }))
-    );
+    if (transactions.length) {
+      // New tx submitted after initial load
+      setTransactions((txs) => [
+        {
+          id: txs.length,
+          address,
+        },
+        ...txs,
+      ]);
+    } else {
+      setTransactions(
+        new Array(parseInt(transactionCount.toString())).fill(null).map((_, id) => ({
+          id,
+          address,
+        }))
+      );
+    }
   }, [transactionCount]);
 
   useEffect(() => {
